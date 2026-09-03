@@ -141,8 +141,8 @@ func printMenu() {
     5. Modo manual: Digite texto livre
     0. Sair
     
-    > Escolha (0-5): \
-    """, terminator: "")
+    """)
+    print("> Escolha (0-5): ", terminator: "")
 }
 
 Task {
