@@ -3,54 +3,46 @@ import Darwin
 
 actor PTY {
     let masterFD: Int32
-    private let slaveFD: Int32
-    
-    private var process: Process?
+    private var childPID: pid_t = -1
     private var readTask: Task<Void, Never>?
     
     var onData: (@Sendable (Data) -> Void)?
     
     init() throws {
         var m: Int32 = 0
-        var s: Int32 = 0
-        if openpty(&m, &s, nil, nil, nil) == -1 {
-            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno), userInfo: nil)
-        }
-        self.masterFD = m
-        self.slaveFD = s
+        let pid = forkpty(&m, nil, nil, nil)
         
-        var term = termios()
-        if tcgetattr(slaveFD, &term) == 0 {
-            // Unset ECHO, ICANON to make it raw-like if necessary
+        if pid == -1 {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno), userInfo: nil)
+        } else if pid == 0 {
+            // Child process
+            let args = ["/bin/zsh", "-l"]
+            var cArgs = args.map { strdup($0) }
+            cArgs.append(nil)
+            
+            let env = ["TERM=xterm-256color", "COLORTERM=truecolor", "PATH=\(ProcessInfo.processInfo.environment["PATH"] ?? "/usr/bin:/bin:/usr/sbin:/sbin")", "HOME=\(ProcessInfo.processInfo.environment["HOME"] ?? "")"]
+            var cEnv = env.map { strdup($0) }
+            cEnv.append(nil)
+            
+            execve("/bin/zsh", &cArgs, &cEnv)
+            exit(1)
         }
+        
+        // Parent process
+        self.masterFD = m
+        self.childPID = pid
     }
     
     deinit {
         readTask?.cancel()
         if masterFD != -1 { close(masterFD) }
-        if slaveFD != -1 { close(slaveFD) }
+        if childPID != -1 { kill(childPID, SIGTERM) }
     }
     
     func spawn(executable: String, arguments: [String]) throws {
-        let proc = Process()
-        proc.executableURL = URL(fileURLWithPath: executable)
-        proc.arguments = arguments
-        
-        let handle = FileHandle(fileDescriptor: slaveFD, closeOnDealloc: false)
-        proc.standardInput = handle
-        proc.standardOutput = handle
-        proc.standardError = handle
-        
-        var env = ProcessInfo.processInfo.environment
-        env["TERM"] = "xterm-256color"
-        env["COLORTERM"] = "truecolor"
-        proc.environment = env
-        
-        self.process = proc
-        
+        // Spawning is already handled by forkpty in init() for this prototype
+        // to ensure the controlling terminal is set up properly.
         startReading()
-        
-        try proc.run()
     }
     
     func setOnData(_ handler: @escaping @Sendable (Data) -> Void) {
