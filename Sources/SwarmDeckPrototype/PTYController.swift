@@ -2,16 +2,16 @@ import Foundation
 import SwiftUI
 import GhosttyTerminal
 
+@MainActor
 class PTYController: ObservableObject {
     @Published var viewState: TerminalViewState?
     
     private var pty: PTY?
     
-    init() {
-        start()
-    }
+    init() {}
     
-    func start() {
+    @MainActor
+    func start() async {
         do {
             let pty = try PTY()
             self.pty = pty
@@ -21,7 +21,7 @@ class PTYController: ObservableObject {
                     pty?.writeToMaster(data)
                 },
                 resize: { [weak pty] metrics in
-                    pty?.resize(columns: metrics.columns, rows: metrics.rows, widthPixels: metrics.widthPixels, heightPixels: metrics.heightPixels)
+                    pty?.resize(columns: Int(metrics.columns), rows: Int(metrics.rows), widthPixels: Int(metrics.widthPixels), heightPixels: Int(metrics.heightPixels))
                 }
             )
             
@@ -29,13 +29,13 @@ class PTYController: ObservableObject {
             let state = TerminalViewState()
             state.configuration = options
             
-            pty.onData = { [weak session] data in
+            await pty.setOnData { [weak session] data in
                 session?.receive(data)
             }
             
             self.viewState = state
             
-            try pty.spawn(executable: "/bin/zsh", arguments: ["-l"])
+            try await pty.spawn(executable: "/bin/zsh", arguments: ["-l"])
             
         } catch {
             print("Failed to initialize PTY: \(error)")

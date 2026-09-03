@@ -7,12 +7,7 @@ struct ContentView: View {
     var body: some View {
         VStack {
             if let viewState = ptyController.viewState {
-                TerminalViewRepresentable(
-                    context: viewState,
-                    controller: viewState.controller,
-                    isSurfaceVisible: true,
-                    focusBinding: nil
-                )
+                TerminalSurfaceView(context: viewState)
                 .onAppear {
                     viewState.requestFocus()
                 }
@@ -21,5 +16,10 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 600, minHeight: 400)
+        .task {
+            if ptyController.viewState == nil {
+                await ptyController.start()
+            }
+        }
     }
 }
