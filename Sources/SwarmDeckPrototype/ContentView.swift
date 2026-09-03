@@ -3,14 +3,17 @@ import GhosttyTerminal
 
 struct ContentView: View {
     @StateObject private var ptyController = PTYController()
+    @FocusState private var isFocused: Bool
 
     var body: some View {
         VStack {
             if let viewState = ptyController.viewState {
                 TerminalSurfaceView(context: viewState)
-                .onAppear {
-                    viewState.requestFocus()
-                }
+                    .terminalFocused($isFocused)
+                    .onAppear {
+                        isFocused = true
+                        viewState.requestFocus()
+                    }
             } else {
                 Text("Initializing...")
             }

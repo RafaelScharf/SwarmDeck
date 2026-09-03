@@ -18,6 +18,7 @@ class PTYController: ObservableObject {
             
             let session = InMemoryTerminalSession(
                 write: { [weak pty] data in
+                    print("Received input from ghostty: \(data.count) bytes")
                     pty?.writeToMaster(data)
                 },
                 resize: { [weak pty] metrics in
