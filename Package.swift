@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "SwarmDeckPrototype",
     platforms: [
-        .macOS(.v13)
+        .macOS(.v14)
     ],
     dependencies: [
         .package(url: "https://github.com/Lakr233/libghostty-spm.git", branch: "main")
