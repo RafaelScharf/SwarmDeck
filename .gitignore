@@ -12,3 +12,4 @@ test_openpty
 # Local scratch and prompts
 .local/
 .prompts/
+.aider*

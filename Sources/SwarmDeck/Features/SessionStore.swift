@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import AppKit
 import GhosttyTerminal
 import GhosttyTheme
 
@@ -62,57 +63,60 @@ public enum TerminalThemePreset: String, CaseIterable, Identifiable, Sendable {
 
 @Observable
 @MainActor
-class Session: Identifiable, Hashable {
-    let id: UUID
-    var name: String
-    let preset: AgentPreset
-    let workingDirectory: String?
-    let customEnvironment: [String: String]
+public final class AgentSession: Identifiable, Hashable {
+    public let id: UUID
+    public var name: String
+    public let preset: AgentPreset
+    public let workingDirectory: String?
+    public let customEnvironment: [String: String]
+    public let createdAt: Date
     
-    // Font Scaling constants and state
+    // Font Scaling state
     public static let defaultFontSize: Double = 13.0
     public static let minFontSize: Double = 9.0
     public static let maxFontSize: Double = 36.0
     public static let fontSizeStep: Double = 1.0
 
-    var fontSize: Double = Session.defaultFontSize
-    var currentTheme: String? = nil
-    var currentViewport: TerminalViewportMetrics? = nil
+    public var fontSize: Double = AgentSession.defaultFontSize
+    public var currentTheme: String? = nil
+    public var currentViewport: TerminalViewportMetrics? = nil
 
-    var state: AgentState = .idle
-    var viewState: TerminalViewState?
-    var pid: pid_t?
-    var exitCode: Int32?
-    weak var manager: SessionManager?
+    public var state: AgentState = .idle
+    public var viewState: TerminalViewState?
+    public var pid: pid_t?
+    public var exitCode: Int32?
+    public weak var store: SessionStore?
     
-    private(set) var terminalSession: InMemoryTerminalSession?
-    private var pty: PTY?
-    private var detector = OutputStateDetector()
+    private(set) public var terminalSession: InMemoryTerminalSession?
+    private var pty: PTYService?
+    private var detector = AgentStateDetector()
     private var coalescer: PTYStreamCoalescer?
     
-    init(
+    public init(
         id: UUID = UUID(),
         name: String,
         preset: AgentPreset = .standardShell,
         workingDirectory: String? = nil,
-        customEnvironment: [String: String] = [:]
+        customEnvironment: [String: String] = [:],
+        createdAt: Date = Date()
     ) {
         self.id = id
         self.name = name
         self.preset = preset
         self.workingDirectory = workingDirectory
         self.customEnvironment = customEnvironment
+        self.createdAt = createdAt
     }
     
-    nonisolated static func == (lhs: Session, rhs: Session) -> Bool {
+    public nonisolated static func == (lhs: AgentSession, rhs: AgentSession) -> Bool {
         lhs.id == rhs.id
     }
     
-    nonisolated func hash(into hasher: inout Hasher) {
+    public nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
     
-    func start() async {
+    public func start() async {
         do {
             let config = PTYConfiguration(
                 command: preset.command,
@@ -120,7 +124,7 @@ class Session: Identifiable, Hashable {
                 workingDirectory: workingDirectory,
                 environment: customEnvironment
             )
-            let pty = try PTY(configuration: config)
+            let pty = try PTYService(configuration: config)
             self.pty = pty
             self.pid = pty.childPID
             
@@ -159,13 +163,10 @@ class Session: Identifiable, Hashable {
             await detector.setOnStateChange { [weak self] newState in
                 Task { @MainActor in
                     guard let self = self else { return }
-                    // Only apply detector states if process hasn't exited
-                    if case .exited = self.state {
-                        return
-                    }
+                    if case .exited = self.state { return }
                     self.state = newState
                     let isAppActive = NSApplication.shared.isActive
-                    let isSelected = (self.manager?.selectedSessionId == self.id)
+                    let isSelected = (self.store?.selectedSessionId == self.id)
                     let sessionId = self.id
                     let sessionName = self.name
                     Task {
@@ -200,7 +201,7 @@ class Session: Identifiable, Hashable {
                     self.state = newState
                     self.exitCode = exitCode
                     let isAppActive = NSApplication.shared.isActive
-                    let isSelected = (self.manager?.selectedSessionId == self.id)
+                    let isSelected = (self.store?.selectedSessionId == self.id)
                     let sessionId = self.id
                     let sessionName = self.name
                     Task {
@@ -215,7 +216,6 @@ class Session: Identifiable, Hashable {
                 }
             }
             
-            // Start PTY reading and process supervision
             await pty.start()
             
         } catch {
@@ -226,20 +226,20 @@ class Session: Identifiable, Hashable {
     
     // MARK: - Font Scaling
     
-    func increaseFontSize() {
-        setFontSize(fontSize + Session.fontSizeStep)
+    public func increaseFontSize() {
+        setFontSize(fontSize + AgentSession.fontSizeStep)
     }
     
-    func decreaseFontSize() {
-        setFontSize(fontSize - Session.fontSizeStep)
+    public func decreaseFontSize() {
+        setFontSize(fontSize - AgentSession.fontSizeStep)
     }
     
-    func resetFontSize() {
-        setFontSize(Session.defaultFontSize)
+    public func resetFontSize() {
+        setFontSize(AgentSession.defaultFontSize)
     }
     
-    func setFontSize(_ size: Double) {
-        let clamped = max(Session.minFontSize, min(Session.maxFontSize, size))
+    public func setFontSize(_ size: Double) {
+        let clamped = max(AgentSession.minFontSize, min(AgentSession.maxFontSize, size))
         guard clamped != fontSize else { return }
         fontSize = clamped
         applyConfiguration()
@@ -247,7 +247,7 @@ class Session: Identifiable, Hashable {
     
     // MARK: - Theme Management
     
-    func setTheme(named name: String?) {
+    public func setTheme(named name: String?) {
         self.currentTheme = name
         if let name = name, let themeDef = GhosttyThemeCatalog.theme(named: name) {
             _ = viewState?.setTheme(themeDef.toTerminalTheme())
@@ -255,9 +255,7 @@ class Session: Identifiable, Hashable {
         applyConfiguration()
     }
     
-    // MARK: - Configuration Application
-    
-    func applyConfiguration() {
+    public func applyConfiguration() {
         let currentSize = Float(fontSize)
         let themeName = currentTheme
         let themeDef = themeName.flatMap { GhosttyThemeCatalog.theme(named: $0) }
@@ -291,21 +289,14 @@ class Session: Identifiable, Hashable {
     
     // MARK: - Terminal Shortcuts & Actions
     
-    /// Clears the terminal scrollback buffer and resets visible screen (Cmd+K).
-    func clearScrollback() {
-        // 1. Send ED 3 (clear scrollback) + CUP (cursor home) + ED 2 (clear display) to Ghostty display
+    public func clearScrollback() {
         let clearSequence = "\u{001B}[3J\u{001B}[H\u{001B}[2J"
         terminalSession?.receive(clearSequence)
-        
-        // 2. Send Form Feed (Ctrl+L) to child process stdin to trigger prompt repaint
         pty?.writeToMaster(Data([0x0C]))
     }
     
-    // MARK: - Clipboard Operations
-    
-    /// Pastes given string into the terminal surface or PTY.
     @discardableResult
-    func pasteText(_ text: String) -> Bool {
+    public func pasteText(_ text: String) -> Bool {
         guard !text.isEmpty else { return false }
         if let viewState = self.viewState, viewState.paste(text: text) {
             return true
@@ -314,18 +305,16 @@ class Session: Identifiable, Hashable {
         return true
     }
     
-    /// Pastes text from the system clipboard (Cmd+V).
     @discardableResult
-    func pasteFromClipboard() -> Bool {
+    public func pasteFromClipboard() -> Bool {
         guard let text = NSPasteboard.general.string(forType: .string), !text.isEmpty else {
             return false
         }
         return pasteText(text)
     }
     
-    /// Reads viewport text or copies to clipboard (Cmd+C helper).
     @discardableResult
-    func copySelectionOrViewport() -> String? {
+    public func copySelectionOrViewport() -> String? {
         if let text = terminalSession?.readViewportText(), !text.isEmpty {
             copyToClipboard(text)
             return text
@@ -333,15 +322,13 @@ class Session: Identifiable, Hashable {
         return nil
     }
     
-    func copyToClipboard(_ text: String) {
+    public func copyToClipboard(_ text: String) {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
     }
     
-    // MARK: - Viewport Synchronization
-    
-    func updateViewport(columns: Int, rows: Int, widthPixels: Int, heightPixels: Int, cellWidth: Int = 0, cellHeight: Int = 0) {
+    public func updateViewport(columns: Int, rows: Int, widthPixels: Int, heightPixels: Int, cellWidth: Int = 0, cellHeight: Int = 0) {
         self.currentViewport = TerminalViewportMetrics(
             columns: columns,
             rows: rows,
@@ -352,7 +339,7 @@ class Session: Identifiable, Hashable {
         )
     }
     
-    func terminate() async {
+    public func terminate() async {
         coalescer?.cancel()
         await pty?.terminate()
     }
@@ -360,20 +347,28 @@ class Session: Identifiable, Hashable {
 
 @Observable
 @MainActor
-class SessionManager {
-    static let shared = SessionManager()
+public final class SessionStore {
+    public static let shared = SessionStore()
     
-    var sessions: [Session] = []
-    var selectedSessionId: UUID?
+    public var sessions: [AgentSession] = []
+    public var selectedSessionId: UUID?
     
-    var activeSession: Session? {
+    // Close confirmation dialog state
+    public var sessionPendingClose: AgentSession?
+    public var showingCloseConfirmation: Bool = false
+    
+    // Sheet creation state
+    public var showingNewSessionSheet: Bool = false
+    
+    public var activeSession: AgentSession? {
         guard let id = selectedSessionId else { return sessions.first }
         return sessions.first(where: { $0.id == id })
     }
     
-    /// Spawns and adds a new session with configurable agent preset, cwd, and environment.
+    public init() {}
+    
     @discardableResult
-    func addSession(
+    public func addSession(
         preset: AgentPreset = .standardShell,
         customName: String? = nil,
         workingDirectory: String? = nil,
@@ -382,29 +377,21 @@ class SessionManager {
         let countForPreset = sessions.filter { $0.preset.id == preset.id }.count + 1
         let name = customName ?? "\(preset.name) \(countForPreset)"
         
-        let session = Session(
+        let session = AgentSession(
             name: name,
             preset: preset,
             workingDirectory: workingDirectory,
             customEnvironment: environment
         )
-        session.manager = self
+        session.store = self
         sessions.append(session)
         await session.start()
         
-        if selectedSessionId == nil {
-            selectedSessionId = session.id
-        }
+        selectedSessionId = session.id
         return session.id
     }
     
-    /// Legacy compatibility helper.
-    func addSession(name: String) async {
-        await addSession(preset: .standardShell, customName: name)
-    }
-    
-    /// Terminates the child process and removes the session from the manager.
-    func closeSession(id: UUID) async {
+    public func closeSession(id: UUID) async {
         guard let index = sessions.firstIndex(where: { $0.id == id }) else { return }
         let session = sessions[index]
         await session.terminate()
@@ -415,62 +402,91 @@ class SessionManager {
         }
     }
     
-    /// Terminates the child process but keeps the terminal surface open to review history.
-    func terminateSession(id: UUID) async {
+    public func terminateSession(id: UUID) async {
         guard let session = sessions.first(where: { $0.id == id }) else { return }
         await session.terminate()
     }
     
-    func clearScrollbackOnActiveSession() {
-        activeSession?.clearScrollback()
-    }
-    
-    func increaseFontSizeOnActiveSession() {
-        activeSession?.increaseFontSize()
-    }
-    
-    func decreaseFontSizeOnActiveSession() {
-        activeSession?.decreaseFontSize()
-    }
-    
-    func resetFontSizeOnActiveSession() {
-        activeSession?.resetFontSize()
-    }
-    
-    func pasteOnActiveSession() {
-        activeSession?.pasteFromClipboard()
-    }
-    
-    func setThemeOnActiveSession(named: String?) {
-        activeSession?.setTheme(named: named)
-    }
-    
-    func selectSession(at index: Int) {
-        guard index >= 0 && index < sessions.count else { return }
-        selectedSessionId = sessions[index].id
-    }
-    
-    func renameSession(id: UUID, newName: String) {
-        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        guard let session = sessions.first(where: { $0.id == id }) else { return }
-        session.name = trimmed
-    }
-    
-    func restartSession(id: UUID) async {
+    public func restartSession(id: UUID) async {
         guard let index = sessions.firstIndex(where: { $0.id == id }) else { return }
         let oldSession = sessions[index]
         await oldSession.terminate()
         
-        let newSession = Session(
+        let newSession = AgentSession(
             id: oldSession.id,
             name: oldSession.name,
             preset: oldSession.preset,
             workingDirectory: oldSession.workingDirectory,
             customEnvironment: oldSession.customEnvironment
         )
-        newSession.manager = self
+        newSession.store = self
         sessions[index] = newSession
         await newSession.start()
+    }
+    
+    public func renameSession(id: UUID, newName: String) {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        guard let session = sessions.first(where: { $0.id == id }) else { return }
+        session.name = trimmed
+    }
+    
+    // MARK: - Keyboard Navigation (Cmd+1..Cmd+9, Cmd+W)
+    
+    public func selectSession(at index: Int) {
+        guard index >= 0 && index < sessions.count else { return }
+        selectedSessionId = sessions[index].id
+    }
+    
+    public func requestCloseActiveSession() {
+        guard let session = activeSession else { return }
+        if session.state == .working {
+            sessionPendingClose = session
+            showingCloseConfirmation = true
+        } else {
+            Task {
+                await closeSession(id: session.id)
+            }
+        }
+    }
+    
+    public func confirmCloseSession() {
+        guard let session = sessionPendingClose else { return }
+        sessionPendingClose = nil
+        showingCloseConfirmation = false
+        Task {
+            await closeSession(id: session.id)
+        }
+    }
+    
+    public func cancelCloseSession() {
+        sessionPendingClose = nil
+        showingCloseConfirmation = false
+    }
+    
+    // MARK: - Actions on Active Session
+    
+    public func clearScrollbackOnActiveSession() {
+        activeSession?.clearScrollback()
+    }
+    
+    public func increaseFontSizeOnActiveSession() {
+        activeSession?.increaseFontSize()
+    }
+    
+    public func decreaseFontSizeOnActiveSession() {
+        activeSession?.decreaseFontSize()
+    }
+    
+    public func resetFontSizeOnActiveSession() {
+        activeSession?.resetFontSize()
+    }
+    
+    public func pasteOnActiveSession() {
+        activeSession?.pasteFromClipboard()
+    }
+    
+    public func setThemeOnActiveSession(named: String?) {
+        activeSession?.setTheme(named: named)
     }
 }

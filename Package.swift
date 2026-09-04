@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwarmDeckPrototype",
+    name: "SwarmDeck",
     platforms: [
         .macOS(.v14)
     ],
@@ -11,13 +11,24 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
+            name: "SwarmDeck",
+            dependencies: [
+                .product(name: "GhosttyKit", package: "libghostty-spm"),
+                .product(name: "GhosttyTerminal", package: "libghostty-spm"),
+                .product(name: "GhosttyTheme", package: "libghostty-spm"),
+                .product(name: "ShellCraftKit", package: "libghostty-spm"),
+            ],
+            path: "Sources/SwarmDeck"
+        ),
+        .executableTarget(
             name: "SwarmDeckPrototype",
             dependencies: [
                 .product(name: "GhosttyKit", package: "libghostty-spm"),
                 .product(name: "GhosttyTerminal", package: "libghostty-spm"),
                 .product(name: "GhosttyTheme", package: "libghostty-spm"),
                 .product(name: "ShellCraftKit", package: "libghostty-spm"),
-            ]
+            ],
+            path: "Sources/SwarmDeckPrototype"
         ),
     ]
 )

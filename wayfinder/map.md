@@ -55,6 +55,7 @@ Sources/SwarmDeck/
 - [Prototype: PTY High-Throughput Backpressure & Stream Coalescing](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-pty-backpressure-resolution.md) ([#11](https://github.com/RafaelScharf/SwarmDeck/issues/11)) — Dedicated `PTYStreamCoalescer` with bounded `AsyncStream` backpressure, 60 FPS adaptive frame batching, bounded 16KB sliding tail buffer in `OutputStateDetector`, and deferred prompt regex analysis upon quiescence.
 - [Prototype: Unix Domain Socket IPC & CLI Dispatcher](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-unix-socket-ipc-resolution.md) ([#12](https://github.com/RafaelScharf/SwarmDeck/issues/12)) — Asynchronous local Unix Domain Socket IPC server (`/tmp/swarmdeck-$UID.sock`) running a newline-delimited JSON-RPC protocol (`spawn`, `list`, `terminate`, `ping`) with CLI client tool (`swarmdeck_cli.swift`) and MainActor synchronization.
 - [Prototype: Terminal Surface Shortcuts, Clipboard & Layout Sync](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-terminal-surface-sync-resolution.md) ([#8](https://github.com/RafaelScharf/SwarmDeck/issues/8)) — Layout dimension synchronization via Darwin `ioctl(TIOCSWINSZ)` with bounds clamping and deduplication, `suppressesPixelOnlyResizes` preventing sub-cell redraw storms, reactive font scaling (`Cmd++`/`Cmd+-`/`Cmd+0`), curated Ghostty themes (`Dracula`, `Nord`, `Solarized Dark`), clear scrollback (`Cmd+K` via `\u{001B}[3J\u{001B}[H\u{001B}[2J` + `0x0C`), and clipboard integration with `NSPasteboard.general`.
+- [Task: Session Multiplexer Sidebar & Navigation UX](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/task-session-multiplexer-sidebar-resolution.md) ([#7](https://github.com/RafaelScharf/SwarmDeck/issues/7)) — Production Clean Architecture MVP layout (`Sources/SwarmDeck/`) with polished `AgentRowView` (animated spinner for `.working`, red badge with tooltip for `.blocked`, preset icons, `⌘1`..`⌘9` hints), `NewSessionSheet` modal with `NSOpenPanel` directory picker, keyboard navigation (`Cmd+1`..`Cmd+9`, `Cmd+W` close with working confirmation guard, `Cmd+N`/`Cmd+T`), session renaming, and process restarting.
 
 ## Active Tickets
 
@@ -70,7 +71,7 @@ Sources/SwarmDeck/
 - [x] [Prototype: Unix Domain Socket IPC & CLI Dispatcher](https://github.com/RafaelScharf/SwarmDeck/issues/12)
 
 ### Phase 2: Clean Architecture MVP Implementation (Autonomous PR Loop)
-- [ ] [Task: Session Multiplexer Sidebar & Navigation UX](https://github.com/RafaelScharf/SwarmDeck/issues/7)
+- [x] [Task: Session Multiplexer Sidebar & Navigation UX](https://github.com/RafaelScharf/SwarmDeck/issues/7)
 - [ ] [Task: macOS App Packaging, Entitlements & Release Setup](https://github.com/RafaelScharf/SwarmDeck/issues/9)
 
 ## Not yet specified
