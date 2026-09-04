@@ -7,19 +7,28 @@ A native macOS SwiftUI application embedding `libghostty` to multiplex and manag
 ## Notes
 
 - **Domain:** macOS native development (SwiftUI), Terminal emulation, Process Management (PTY).
-- **Core Tech:** Swift, libghostty (Zig/Metal).
+- **Core Tech:** Swift 6 Concurrency, libghostty-spm (Zig/Metal), UserNotifications.
 - **Goal:** Zero WebView overhead, minimal latency, robust background execution.
-- Use `research` subagents to investigate external C/Zig APIs and Swift bridging.
+- All core technical spikes (#2, #3, #4) have completed. Current phase is executing the implementation roadmap.
 
 ## Decisions so far
 
-- [Agent Output State Detection](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/agent-output-state-detection-resolution.md) — Must use a multi-tier pipeline (debounce, OSC 133, ANSI stripping, targeted regex) via Swift Actor.
-- [Swift PTY Management](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/swift-pty-management-resolution.md) — Use `openpty()`, `DispatchSourceRead` with `AsyncStream`, and strict slave FD cleanup inside an actor to avoid macOS crashes.
-- [libghostty Swift Integration](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/libghostty-swift-integration-resolution.md) — Use `GhosttyKit.xcframework` C-ABI directly in Swift via `NSViewRepresentable`, initializing on the main thread and letting Ghostty's Metal layer handle rendering without custom draw loops.
+- [Prototype: Minimal SwiftUI PTY App](https://github.com/RafaelScharf/SwarmDeck/issues/2) — Embedded `libghostty-spm` via `InMemoryTerminalSession` and switched to `forkpty()` inside a Swift Actor for controlling terminal (`TIOCSCTTY`), job control, and signal handling.
+- [Prototype: Agent State Detection Engine](https://github.com/RafaelScharf/SwarmDeck/issues/3) — Multi-tier pipeline with 250ms debounce, carriage return isolation (`\r`), ANSI stripping, OSC 133 semantic prompts, and regex matching inside an actor.
+- [Prototype: Sidebar & Multi-Session Architecture](https://github.com/RafaelScharf/SwarmDeck/issues/4) — Native `@Observable` architecture with `NavigationSplitView` allows multiplexing parallel background sessions with zero UI lag and no memory leaks.
+
+## Active Tickets
+
+- [ ] [Task: Process Lifecycle Supervisor & Configurable Spawning](https://github.com/RafaelScharf/SwarmDeck/issues/5)
+- [ ] [Task: System Notifications Service via UNUserNotificationCenter](https://github.com/RafaelScharf/SwarmDeck/issues/6)
+- [ ] [Task: Session Multiplexer Sidebar & Navigation UX](https://github.com/RafaelScharf/SwarmDeck/issues/7)
+- [ ] [Task: Terminal Surface Shortcuts, Clipboard & Layout Sync](https://github.com/RafaelScharf/SwarmDeck/issues/8)
+- [ ] [Task: macOS App Packaging, Entitlements & Release Setup](https://github.com/RafaelScharf/SwarmDeck/issues/9)
 
 ## Not yet specified
 
-*(All known fog has graduated to active Prototype tickets #2, #3, and #4)*
+- **Session State Persistence:** Restoring session tabs, working directories, and command histories across application restarts.
+- **Custom Agent Detection Rules:** User-configurable regex patterns and triggers per CLI tool via configuration files.
 
 ## Out of scope
 
