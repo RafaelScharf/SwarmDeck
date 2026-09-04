@@ -8,3 +8,7 @@ DerivedData/
 .netrc
 test_forkpty
 test_openpty
+
+# Local scratch and prompts
+.local/
+.prompts/
