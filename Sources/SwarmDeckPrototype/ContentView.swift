@@ -2,7 +2,7 @@ import SwiftUI
 import GhosttyTerminal
 
 struct ContentView: View {
-    @State private var sessionManager = SessionManager()
+    @State private var sessionManager = SessionManager.shared
     @FocusState private var isFocused: Bool
     @State private var showingCustomPresetSheet = false
     

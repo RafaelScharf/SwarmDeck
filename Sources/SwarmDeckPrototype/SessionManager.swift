@@ -152,16 +152,19 @@ class Session: Identifiable, Hashable {
 @Observable
 @MainActor
 class SessionManager {
+    static let shared = SessionManager()
+    
     var sessions: [Session] = []
     var selectedSessionId: UUID?
     
     /// Spawns and adds a new session with configurable agent preset, cwd, and environment.
+    @discardableResult
     func addSession(
         preset: AgentPreset = .standardShell,
         customName: String? = nil,
         workingDirectory: String? = nil,
         environment: [String: String] = [:]
-    ) async {
+    ) async -> UUID {
         let countForPreset = sessions.filter { $0.preset.id == preset.id }.count + 1
         let name = customName ?? "\(preset.name) \(countForPreset)"
         
@@ -178,6 +181,7 @@ class SessionManager {
         if selectedSessionId == nil {
             selectedSessionId = session.id
         }
+        return session.id
     }
     
     /// Legacy compatibility helper.

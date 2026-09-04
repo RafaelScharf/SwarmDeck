@@ -53,6 +53,7 @@ Sources/SwarmDeck/
 - [Prototype: System Notifications via UNUserNotificationCenter](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-system-notifications-resolution.md) ([#6](https://github.com/RafaelScharf/SwarmDeck/issues/6)) — Multi-backend `NotificationService` actor with debounced rate-limiting, foreground suppression, background agent state triggers (`.blocked`, `.working` -> `.idle`, non-zero `.exited`), and deep-link session focusing via `UNUserNotificationCenterDelegate`.
 - [Prototype: macOS Login Shell Environment Harvesting](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-shell-environment-harvesting-resolution.md) ([#10](https://github.com/RafaelScharf/SwarmDeck/issues/10)) — Asynchronous login shell harvesting (`/usr/bin/env -0` with `printenv` fallback) protected by an 800ms timeout watchdog, null-delimited token parsing, in-memory caching, and automatic terminal defaults injection (`TERM=xterm-256color`, `COLORTERM=truecolor`).
 - [Prototype: PTY High-Throughput Backpressure & Stream Coalescing](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-pty-backpressure-resolution.md) ([#11](https://github.com/RafaelScharf/SwarmDeck/issues/11)) — Dedicated `PTYStreamCoalescer` with bounded `AsyncStream` backpressure, 60 FPS adaptive frame batching, bounded 16KB sliding tail buffer in `OutputStateDetector`, and deferred prompt regex analysis upon quiescence.
+- [Prototype: Unix Domain Socket IPC & CLI Dispatcher](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-unix-socket-ipc-resolution.md) ([#12](https://github.com/RafaelScharf/SwarmDeck/issues/12)) — Asynchronous local Unix Domain Socket IPC server (`/tmp/swarmdeck-$UID.sock`) running a newline-delimited JSON-RPC protocol (`spawn`, `list`, `terminate`, `ping`) with CLI client tool (`swarmdeck_cli.swift`) and MainActor synchronization.
 
 ## Active Tickets
 
@@ -65,7 +66,7 @@ Sources/SwarmDeck/
 - [ ] [Prototype: Terminal Surface Shortcuts, Clipboard & Layout Sync](https://github.com/RafaelScharf/SwarmDeck/issues/8)
 - [x] [Prototype: macOS Login Shell Environment Harvesting](https://github.com/RafaelScharf/SwarmDeck/issues/10)
 - [x] [Prototype: PTY High-Throughput Backpressure & Stream Coalescing](https://github.com/RafaelScharf/SwarmDeck/issues/11)
-- [ ] [Prototype: Unix Domain Socket IPC & CLI Dispatcher](https://github.com/RafaelScharf/SwarmDeck/issues/12)
+- [x] [Prototype: Unix Domain Socket IPC & CLI Dispatcher](https://github.com/RafaelScharf/SwarmDeck/issues/12)
 
 ### Phase 2: Clean Architecture MVP Implementation (Autonomous PR Loop)
 - [ ] [Task: Session Multiplexer Sidebar & Navigation UX](https://github.com/RafaelScharf/SwarmDeck/issues/7)

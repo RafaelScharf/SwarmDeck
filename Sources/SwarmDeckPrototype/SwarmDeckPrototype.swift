@@ -32,6 +32,71 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         Task.detached(priority: .userInitiated) {
             await ShellEnvironmentHarvester.shared.harvest()
         }
+        
+        // Start local Unix Domain Socket IPC server
+        Task {
+            await IPCServer.shared.setHandler { request in
+                await AppDelegate.handleIPCRequest(request)
+            }
+            
+            do {
+                try await IPCServer.shared.start()
+            } catch {
+                print("IPCServer startup notice: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    @MainActor
+    static func handleIPCRequest(_ request: IPCRequest) async -> IPCResponse {
+        switch request.method {
+        case "ping":
+            return .success(id: request.id, result: "pong")
+            
+        case "spawn":
+            let presetName = request.params?["preset"] ?? "shell"
+            let cwd = request.params?["cwd"]
+            let customName = request.params?["name"]
+            
+            let preset: AgentPreset
+            switch presetName.lowercased() {
+            case "claude", "claude-code": preset = .claudeCode
+            case "aider": preset = .aider
+            case "agy", "antigravity": preset = .antigravity
+            default: preset = .standardShell
+            }
+            
+            let newId = await SessionManager.shared.addSession(
+                preset: preset,
+                customName: customName,
+                workingDirectory: cwd
+            )
+            
+            if request.params?["focus"] == "true" {
+                NSApplication.shared.activate(ignoringOtherApps: true)
+                if let window = NSApplication.shared.windows.first {
+                    window.makeKeyAndOrderFront(nil)
+                }
+            }
+            
+            return .success(id: request.id, result: "{\"sessionId\":\"\(newId.uuidString)\"}")
+            
+        case "list":
+            let list = SessionManager.shared.sessions.map { s in
+                "{\"id\":\"\(s.id.uuidString)\",\"name\":\"\(s.name)\",\"state\":\"\(s.state)\"}"
+            }.joined(separator: ",")
+            return .success(id: request.id, result: "[\(list)]")
+            
+        case "terminate":
+            guard let idStr = request.params?["id"], let targetId = UUID(uuidString: idStr) else {
+                return .failure(id: request.id, code: -32602, message: "Missing or invalid 'id' parameter")
+            }
+            await SessionManager.shared.terminateSession(id: targetId)
+            return .success(id: request.id, result: "{\"terminated\":true}")
+            
+        default:
+            return .failure(id: request.id, code: -32601, message: "Method not found: \(request.method)")
+        }
     }
     
     // Handle notification click / deep-link
