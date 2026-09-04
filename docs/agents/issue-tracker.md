@@ -10,6 +10,8 @@ Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all o
 - **Comment on an issue**: `gh issue comment <number> --body "..."`
 - **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
 - **Close**: `gh issue close <number> --comment "..."`
+- **Create a PR**: `gh pr create --base dev --title "..." --body "..."` (always target `dev` as base branch for development work).
+- **Merge a PR**: `gh pr merge <number> --merge` (after tests and `swift build` pass).
 
 Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
 
