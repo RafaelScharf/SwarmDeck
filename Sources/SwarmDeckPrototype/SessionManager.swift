@@ -15,6 +15,7 @@ class Session: Identifiable, Hashable {
     var viewState: TerminalViewState?
     var pid: pid_t?
     var exitCode: Int32?
+    weak var manager: SessionManager?
     
     private var pty: PTY?
     private var detector = OutputStateDetector()
@@ -73,11 +74,25 @@ class Session: Identifiable, Hashable {
             
             await detector.setOnStateChange { [weak self] newState in
                 Task { @MainActor in
+                    guard let self = self else { return }
                     // Only apply detector states if process hasn't exited
-                    if let self = self, case .exited = self.state {
+                    if case .exited = self.state {
                         return
                     }
-                    self?.state = newState
+                    self.state = newState
+                    let isAppActive = NSApplication.shared.isActive
+                    let isSelected = (self.manager?.selectedSessionId == self.id)
+                    let sessionId = self.id
+                    let sessionName = self.name
+                    Task {
+                        await NotificationService.shared.handleStateChange(
+                            sessionId: sessionId,
+                            sessionName: sessionName,
+                            newState: newState,
+                            isSessionActive: isSelected,
+                            isAppActive: isAppActive
+                        )
+                    }
                 }
             }
             
@@ -90,8 +105,23 @@ class Session: Identifiable, Hashable {
             
             await pty.setOnExit { [weak self] exitCode in
                 Task { @MainActor in
-                    self?.state = .exited(code: exitCode)
-                    self?.exitCode = exitCode
+                    guard let self = self else { return }
+                    let newState = AgentState.exited(code: exitCode)
+                    self.state = newState
+                    self.exitCode = exitCode
+                    let isAppActive = NSApplication.shared.isActive
+                    let isSelected = (self.manager?.selectedSessionId == self.id)
+                    let sessionId = self.id
+                    let sessionName = self.name
+                    Task {
+                        await NotificationService.shared.handleStateChange(
+                            sessionId: sessionId,
+                            sessionName: sessionName,
+                            newState: newState,
+                            isSessionActive: isSelected,
+                            isAppActive: isAppActive
+                        )
+                    }
                 }
             }
             
@@ -133,6 +163,7 @@ class SessionManager {
             workingDirectory: workingDirectory,
             customEnvironment: environment
         )
+        session.manager = self
         sessions.append(session)
         await session.start()
         
