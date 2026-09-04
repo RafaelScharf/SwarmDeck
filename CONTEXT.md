@@ -22,5 +22,5 @@ While Rust + Tauri with `xterm.js` is great, it relies on a web view. The DOM/Ca
 
 ## Development Strategy (Matt Pocock Flow)
 1. **Wayfinder:** Establish project boundaries, core data models (Session, PTY, Status).
-2. **Grilling:** Resolve open technical questions (e.g., bridging Zig/C to Swift, parsing arbitrary agent output to detect the "waiting for user" state).
-3. **Prototype:** Build a minimal SwiftUI app that spawns a single background PTY process and renders it on screen.
+2. **Grilling & Prototypes (Completed):** Resolved technical questions and validated core assumptions through throwaway spikes (PTY `forkpty` allocation, multi-tier state detection, observation multi-session UI). Archived in `temp/prototypes/` (Issues #2, #3, #4).
+3. **Implementation Frontier:** Executing modular implementation tasks charted in `wayfinder/map.md` (Process supervisor, notifications, sidebar UX, terminal polish, app release).

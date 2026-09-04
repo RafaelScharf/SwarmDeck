@@ -13,9 +13,9 @@ A native macOS SwiftUI application embedding `libghostty` to multiplex and manag
 
 ## Decisions so far
 
-- [Prototype: Minimal SwiftUI PTY App](https://github.com/RafaelScharf/SwarmDeck/issues/2) — Embedded `libghostty-spm` via `InMemoryTerminalSession` and switched to `forkpty()` inside a Swift Actor for controlling terminal (`TIOCSCTTY`), job control, and signal handling.
-- [Prototype: Agent State Detection Engine](https://github.com/RafaelScharf/SwarmDeck/issues/3) — Multi-tier pipeline with 250ms debounce, carriage return isolation (`\r`), ANSI stripping, OSC 133 semantic prompts, and regex matching inside an actor.
-- [Prototype: Sidebar & Multi-Session Architecture](https://github.com/RafaelScharf/SwarmDeck/issues/4) — Native `@Observable` architecture with `NavigationSplitView` allows multiplexing parallel background sessions with zero UI lag and no memory leaks.
+- [Prototype: Minimal SwiftUI PTY App](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-minimal-swiftui-pty-resolution.md) ([#2](https://github.com/RafaelScharf/SwarmDeck/issues/2)) — Embedded `libghostty-spm` via `InMemoryTerminalSession` and switched to `forkpty()` inside a Swift Actor for controlling terminal (`TIOCSCTTY`), job control, and signal handling. Spike scripts organized in [`temp/prototypes/`](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/temp/prototypes/).
+- [Prototype: Agent State Detection Engine](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-agent-state-detection-resolution.md) ([#3](https://github.com/RafaelScharf/SwarmDeck/issues/3)) — Multi-tier pipeline with 250ms debounce, carriage return isolation (`\r`), ANSI stripping, OSC 133 semantic prompts, and regex matching inside an actor. Test harness organized in [`temp/prototypes/prototype_state_detector.swift`](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/temp/prototypes/prototype_state_detector.swift).
+- [Prototype: Sidebar & Multi-Session Architecture](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-sidebar-multisession-resolution.md) ([#4](https://github.com/RafaelScharf/SwarmDeck/issues/4)) — Native `@Observable` architecture with `NavigationSplitView` allows multiplexing parallel background sessions with zero UI lag and no memory leaks.
 
 ## Active Tickets
 
