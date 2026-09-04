@@ -79,6 +79,22 @@ struct ContentView: View {
                         }
                         .padding(.vertical, 4)
                         .contextMenu {
+                            Button {
+                                sessionManager.renameSession(id: session.id, newName: "\(session.name) (Renamed)")
+                            } label: {
+                                Label("Rename Session", systemImage: "pencil")
+                            }
+                            
+                            Button {
+                                Task {
+                                    await sessionManager.restartSession(id: session.id)
+                                }
+                            } label: {
+                                Label("Restart Process", systemImage: "arrow.clockwise")
+                            }
+                            
+                            Divider()
+                            
                             if case .exited = session.state {
                                 Button(role: .destructive) {
                                     Task {
@@ -375,8 +391,19 @@ struct ContentView: View {
                 Form {
                     TextField("Session Name (optional):", text: $customName, prompt: Text("e.g. Code Reviewer"))
                     TextField("Command / Binary:", text: $customCommand, prompt: Text("e.g. python3, git, claude"))
-                    TextField("Arguments (space separated):", text: $customArguments, prompt: Text("e.g. -v --debug"))
-                    TextField("Working Directory (optional):", text: $customWorkingDirectory, prompt: Text("e.g. /Users/.../project"))
+                    HStack {
+                        TextField("Working Directory (optional):", text: $customWorkingDirectory, prompt: Text("e.g. /Users/.../project"))
+                        Button("Browse...") {
+                            let panel = NSOpenPanel()
+                            panel.canChooseFiles = false
+                            panel.canChooseDirectories = true
+                            panel.allowsMultipleSelection = false
+                            panel.canCreateDirectories = true
+                            if panel.runModal() == .OK, let url = panel.url {
+                                customWorkingDirectory = url.path
+                            }
+                        }
+                    }
                 }
                 .padding(.horizontal)
                 
@@ -429,6 +456,27 @@ struct ContentView: View {
         .background {
             // Global keyboard shortcuts
             Group {
+                // Navigation by index Cmd+1 through Cmd+9
+                Button("") { sessionManager.selectSession(at: 0) }.keyboardShortcut("1", modifiers: .command)
+                Button("") { sessionManager.selectSession(at: 1) }.keyboardShortcut("2", modifiers: .command)
+                Button("") { sessionManager.selectSession(at: 2) }.keyboardShortcut("3", modifiers: .command)
+                Button("") { sessionManager.selectSession(at: 3) }.keyboardShortcut("4", modifiers: .command)
+                Button("") { sessionManager.selectSession(at: 4) }.keyboardShortcut("5", modifiers: .command)
+                Button("") { sessionManager.selectSession(at: 5) }.keyboardShortcut("6", modifiers: .command)
+                Button("") { sessionManager.selectSession(at: 6) }.keyboardShortcut("7", modifiers: .command)
+                Button("") { sessionManager.selectSession(at: 7) }.keyboardShortcut("8", modifiers: .command)
+                Button("") { sessionManager.selectSession(at: 8) }.keyboardShortcut("9", modifiers: .command)
+                
+                // Spawn & Close
+                Button("") { showingCustomPresetSheet = true }.keyboardShortcut("n", modifiers: .command)
+                Button("") { showingCustomPresetSheet = true }.keyboardShortcut("t", modifiers: .command)
+                Button("") {
+                    if let id = sessionManager.selectedSessionId {
+                        Task { await sessionManager.closeSession(id: id) }
+                    }
+                }.keyboardShortcut("w", modifiers: .command)
+                
+                // Terminal Actions
                 Button("") { sessionManager.activeSession?.clearScrollback() }
                     .keyboardShortcut("k", modifiers: .command)
                 Button("") { sessionManager.activeSession?.increaseFontSize() }
@@ -442,7 +490,6 @@ struct ContentView: View {
             }
             .frame(width: 0, height: 0)
             .opacity(0)
-            .disabled(sessionManager.activeSession == nil)
         }
     }
     
