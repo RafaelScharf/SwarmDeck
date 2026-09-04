@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwarmDeck — Mapa Executivo de Funcionalidades & Análise de ROI</title>
+  <meta name="description" content="Mapa Executivo de Funcionalidades do SwarmDeck: Orquestrador nativo de múltiplos agentes de IA no macOS com Swift 6 e Metal GPU a 120 FPS.">
+  <meta name="theme-color" content="#090d13">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              950: '#06090e',
+              900: '#090d13',
+              850: '#0d1117',
+              800: '#111620',
+              750: '#161c26',
+              700: '#1c2331',
+              600: '#273142',
+              500: '#39465b',
+            },
+            cyan: {
+              accent: '#00F5D4',
+              glow: 'rgba(0, 245, 212, 0.15)',
+            },
+            emerald: {
+              accent: '#10B981',
+              glow: 'rgba(16, 185, 129, 0.15)',
+            },
+            violet: {
+              accent: '#8B5CF6',
+              glow: 'rgba(139, 92, 246, 0.15)',
+            },
+            amber: {
+              accent: '#F59E0B',
+              glow: 'rgba(245, 158, 11, 0.15)',
+            },
+            rose: {
+              accent: '#F43F5E',
+              glow: 'rgba(244, 63, 94, 0.15)',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Inter"', 'system-ui', 'sans-serif'],
+            mono: ['"SF Mono"', 'Menlo', 'Monaco', '"Cascadia Code"', 'monospace'],
+          },
+          boxShadow: {
+            'apple-deep': '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08)',
+            'apple-card': '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06)',
+            'apple-glow-cyan': '0 0 25px -3px rgba(0, 245, 212, 0.25)',
+            'apple-glow-emerald': '0 0 25px -3px rgba(16, 185, 129, 0.25)',
+            'apple-glow-violet': '0 0 25px -3px rgba(139, 92, 246, 0.25)',
+            'apple-glow-amber': '0 0 25px -3px rgba(245, 158, 11, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Estilização nativa Apple Dark Glass */
+    body {
+      background-color: #06090e;
+      background-image: 
+        radial-gradient(at 15% 15%, rgba(0, 245, 212, 0.04) 0px, transparent 45%),
+        radial-gradient(at 85% 20%, rgba(139, 92, 246, 0.05) 0px, transparent 50%),
+        radial-gradient(at 50% 80%, rgba(16, 185, 129, 0.03) 0px, transparent 60%);
+      color: #E2E8F0;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Scrollbar minimalista estilo macOS */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(9, 13, 19, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Glassmorphism de alta fidelidade */
+    .glass-surface {
+      background: rgba(13, 17, 23, 0.72);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-surface-hover:hover {
+      background: rgba(17, 22, 32, 0.85);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    /* Animação suave para acordes */
+    .accordion-content {
+      transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-in-out;
+    }
+
+    /* Range slider customizado estilo macOS */
+    input[type=range] {
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: #1c2331;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #00F5D4;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 245, 212, 0.5);
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Toast Notification Slide-In */
+    @keyframes slideInRight {
+      from {
+        transform: translateX(120%) scale(0.95);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+      }
+    }
+    .animate-toast {
+      animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Otimização de impressão para PDF Executivo */
+    @media print {
+      body {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .glass-surface {
+        background: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        color: #000000 !important;
+      }
+      .accordion-content {
+        max-height: none !important;
+        display: block !important;
+        opacity: 1 !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen selection:bg-cyan-accent selection:text-obsidian-950 font-sans pb-20">
+
+  <!-- ========================================================================================= -->
+  <!-- TOAST NOTIFICATION CONTAINER (Simulador macOS System Notification) -->
+  <!-- ========================================================================================= -->
+  <div id="macosNotificationToast" class="fixed top-5 right-5 z-50 max-w-sm w-full hidden">
+    <div class="glass-surface bg-obsidian-900/95 p-4 rounded-2xl shadow-2xl border border-white/20 shadow-apple-glow-cyan animate-toast relative overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-amber-400 to-cyan-400"></div>
+      <div class="flex items-start gap-3 mt-1">
+        <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center shrink-0 text-rose-400">
+          <svg class="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping inline-block"></span>
+              Intervenção Necessária
+            </span>
+            <span class="text-[10px] text-gray-400">Agora</span>
+          </div>
+          <p class="text-sm font-medium text-white mt-0.5" id="toastTitle">Claude Code — Backend Auth</p>
+          <p class="text-xs text-gray-300 mt-1 line-clamp-2" id="toastMessage">O agente aguarda confirmação para aplicar alterações em 3 arquivos de migração SQL.</p>
+          <div class="mt-3 flex items-center gap-2">
+            <button onclick="focusSimulatedSession()" class="px-3 py-1 text-xs font-medium text-obsidian-950 bg-cyan-accent hover:bg-cyan-300 rounded-lg transition-colors flex items-center gap-1 shadow-sm">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              Focar Sessão (Deep-Link)
+            </button>
+            <button onclick="dismissToast()" class="px-2.5 py-1 text-xs font-medium text-gray-400 hover:text-white rounded-lg transition-colors">
+              Dispensar
+            </button>
+          </div>
+        </div>
+        <button onclick="dismissToast()" class="text-gray-500 hover:text-gray-300 -mt-1 -mr-1 p-1">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================================= -->
+  <!-- MAC OS WINDOW CONTAINER -->
+  <!-- ========================================================================================= -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+
+    <!-- Top Window Title Bar -->
+    <header class="glass-surface rounded-t-2xl px-5 py-3.5 flex items-center justify-between border-b border-white/10 shadow-lg">
+      <!-- macOS Traffic Lights -->
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E] inline-block cursor-pointer hover:opacity-80 transition-opacity" title="Fechar"></span>
+        <span class="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123] inline-block cursor-pointer hover:opacity-80 transition-opacity" title="Minimizar"></span>
+        <span class="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29] inline-block cursor-pointer hover:opacity-80 transition-opacity" title="Expandir"></span>
+        <span class="ml-3 text-xs font-mono text-gray-400 hidden sm:inline-flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-accent animate-pulse"></span>
+          SwarmDeck.app — Release Architecture Showcase
+        </span>
+      </div>
+
+      <!-- Window Title -->
+      <div class="text-xs font-medium text-gray-300 truncate max-w-xs text-center hidden md:block">
+        Mapa Executivo de Funcionalidades & ROI
+      </div>
+
+      <!-- Quick Actions (PDF / GitHub / Status) -->
+      <div class="flex items-center gap-2.5">
+        <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hidden lg:inline-flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          10/10 Tickets Validados
+        </span>
+        <button onclick="window.print()" class="no-print text-xs font-medium px-3 py-1.5 rounded-lg bg-obsidian-750 hover:bg-obsidian-700 text-gray-200 border border-white/10 transition-all flex items-center gap-1.5 hover:border-cyan-accent/40 shadow-sm">
+          <svg class="w-3.5 h-3.5 text-cyan-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Exportar PDF
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area with macOS Window Body Styling -->
+    <main class="glass-surface rounded-b-2xl p-6 sm:p-8 md:p-10 border-t-0 shadow-apple-deep relative overflow-hidden">
+      
+      <!-- Ambient Background Glow Decorators -->
+      <div class="absolute -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute top-1/3 -right-40 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- ===================================================================================== -->
+      <!-- HERO SECTION: IMPACTO DE NEGÓCIO & KPIs -->
+      <!-- ===================================================================================== -->
+      <section class="relative z-10 text-center max-w-4xl mx-auto pt-4 pb-10">
+        
+        <!-- Status Badge -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium mb-6 shadow-apple-glow-emerald">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>100% VALIDADO EM PROTÓTIPOS NATIVOS SWIFT & METAL GPU</span>
+        </div>
+
+        <!-- Headline Principal -->
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
+          Orquestração Nativa de <br class="hidden sm:inline">
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-accent via-emerald-400 to-violet-accent">
+            Agentes de IA no Mac Sem Fricção
+          </span>
+        </h1>
+
+        <!-- Subtítulo Focado em Valor de Negócio -->
+        <p class="mt-5 text-base sm:text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto">
+          Transforme um único engenheiro em uma força de trabalho autônoma <strong class="text-white font-semibold">1:N</strong>. 
+          O <strong class="text-cyan-accent font-semibold">SwarmDeck</strong> une a velocidade instantânea do motor 
+          <code class="text-xs bg-obsidian-750 px-1.5 py-0.5 rounded text-gray-200">libghostty</code> em Metal GPU 
+          com supervisão de processos POSIX e detecção proativa de bloqueios — eliminando horas de terminal ocioso 
+          e acelerando o ciclo de entrega de software em mais de 4x.
+        </p>
+
+        <!-- 4 Hero KPI Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
+          
+          <!-- KPI 1: Latência -->
+          <div class="glass-surface p-4 rounded-xl border border-white/10 text-left hover:border-cyan-accent/30 transition-colors group">
+            <div class="text-[11px] font-mono text-cyan-accent uppercase tracking-wider font-semibold flex items-center justify-between">
+              Latência de Terminal
+              <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <div class="text-2xl sm:text-3xl font-bold text-white mt-1.5 font-mono">&lt; 1 ms</div>
+            <p class="text-xs text-gray-400 mt-1">Zero lag de digitação com renderização direta em Metal GPU.</p>
+          </div>
+
+          <!-- KPI 2: Memória -->
+          <div class="glass-surface p-4 rounded-xl border border-white/10 text-left hover:border-emerald-accent/30 transition-colors group">
+            <div class="text-[11px] font-mono text-emerald-accent uppercase tracking-wider font-semibold flex items-center justify-between">
+              Pegada de Memória
+              <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+            </div>
+            <div class="text-2xl sm:text-3xl font-bold text-white mt-1.5 font-mono">~15 MB</div>
+            <p class="text-xs text-gray-400 mt-1">Nativo Swift 6. Sem sobrecarga de 1.2GB do Electron.</p>
+          </div>
+
+          <!-- KPI 3: ProMotion GPU -->
+          <div class="glass-surface p-4 rounded-xl border border-violet-accent/30 transition-colors group">
+            <div class="text-[11px] font-mono text-violet-accent uppercase tracking-wider font-semibold flex items-center justify-between">
+              Taxa de Quadros
+              <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+            </div>
+            <div class="text-2xl sm:text-3xl font-bold text-white mt-1.5 font-mono">120 FPS</div>
+            <p class="text-xs text-gray-400 mt-1">Rolagem suave ProMotion e bateria do MacBook gelada.</p>
+          </div>
+
+          <!-- KPI 4: Produtividade -->
+          <div class="glass-surface p-4 rounded-xl border border-white/10 text-left hover:border-amber-accent/30 transition-colors group">
+            <div class="text-[11px] font-mono text-amber-accent uppercase tracking-wider font-semibold flex items-center justify-between">
+              Aceleração de Ciclo
+              <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <div class="text-2xl sm:text-3xl font-bold text-white mt-1.5 font-mono">4.2x</div>
+            <p class="text-xs text-gray-400 mt-1">Throughput multiplicado: elimine a 'babá de terminal'.</p>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ===================================================================================== -->
+      <!-- INTERACTIVE SECTION 1: SIMULADOR AO VIVO DE ESTADOS DO AGENTE (LIVE LAB) -->
+      <!-- ===================================================================================== -->
+      <section class="mb-14 bg-obsidian-850/90 rounded-2xl p-6 border border-white/10 shadow-lg relative overflow-hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/10">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-accent border border-cyan-500/30 uppercase">
+                Laboratório Interativo
+              </span>
+              <h2 class="text-lg font-bold text-white">Simulador em Tempo Real: Reatividade do Agente & Notificação macOS</h2>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">
+              Experimente como o SwarmDeck detecta estados de processos em background e notifica o desenvolvedor instantaneamente.
+            </p>
+          </div>
+
+          <!-- Live State Trigger Buttons -->
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="simulateAgentState('working')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-obsidian-750 hover:bg-obsidian-700 text-emerald-400 border border-emerald-500/30 transition-all flex items-center gap-1.5 hover:shadow-apple-glow-emerald">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              🟢 Em Execução
+            </button>
+            <button onclick="simulateAgentState('blocked')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-all flex items-center gap-1.5 shadow-apple-glow-rose">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+              🔴 Bloqueado (Disparar Alerta)
+            </button>
+            <button onclick="simulateAgentState('idle')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-obsidian-750 hover:bg-obsidian-700 text-gray-300 border border-white/10 transition-all flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+              ⚪ Concluído / Ocioso
+            </button>
+          </div>
+        </div>
+
+        <!-- Terminal & Status Live Canvas -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+          
+          <!-- Mockup Mini-Sidebar Item -->
+          <div class="lg:col-span-4 bg-obsidian-900 rounded-xl p-4 border border-white/10 flex flex-col justify-between">
+            <div>
+              <div class="text-[11px] font-mono uppercase text-gray-400 tracking-wider mb-2 flex items-center justify-between">
+                <span>Sidebar do SwarmDeck</span>
+                <span class="text-[10px] text-gray-500">⌘1</span>
+              </div>
+              
+              <div id="simulatedSessionItem" class="p-3 rounded-lg border transition-all duration-300 bg-obsidian-800 border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <div id="simulatedStatusDot" class="w-3 h-3 rounded-full bg-emerald-400 shadow-sm transition-colors duration-300"></div>
+                  <div>
+                    <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                      Claude Code
+                      <span class="text-[10px] font-normal text-gray-400">#auth-backend</span>
+                    </div>
+                    <div id="simulatedStatusText" class="text-[11px] text-gray-400 font-mono">Processando tokens...</div>
+                  </div>
+                </div>
+                <div id="simulatedBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
+                  WORKING
+                </div>
+              </div>
+
+              <!-- Extra mock sessions for realism -->
+              <div class="p-2.5 rounded-lg border border-transparent hover:border-white/5 opacity-60 flex items-center justify-between mt-1">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-2.5 h-2.5 rounded-full bg-gray-500"></div>
+                  <div class="text-xs text-gray-300">Aider — Tests Suite</div>
+                </div>
+                <span class="text-[10px] font-mono text-gray-500">IDLE</span>
+              </div>
+              <div class="p-2.5 rounded-lg border border-transparent hover:border-white/5 opacity-60 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-2.5 h-2.5 rounded-full bg-gray-500"></div>
+                  <div class="text-xs text-gray-300">Antigravity — Docs API</div>
+                </div>
+                <span class="text-[10px] font-mono text-gray-500">IDLE</span>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-white/5 text-[11px] text-gray-400 flex items-center justify-between font-mono">
+              <span>PTY Stream: <strong class="text-emerald-400">Ativo</strong></span>
+              <span>Debounce: <strong class="text-gray-200">250ms</strong></span>
+            </div>
+          </div>
+
+          <!-- Mockup Metal GPU Terminal Console -->
+          <div class="lg:col-span-8 bg-obsidian-950 rounded-xl p-4 border border-white/10 font-mono text-xs text-gray-300 shadow-inner relative flex flex-col justify-between min-h-[210px]">
+            <div class="flex items-center justify-between pb-2 border-b border-white/5 text-[11px] text-gray-500">
+              <span class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-cyan-accent inline-block"></span>
+                Terminal Surface (libghostty Metal 120 FPS)
+              </span>
+              <span>UTF-8 • VT100 / OSC 133</span>
+            </div>
+
+            <div id="simulatedConsoleBody" class="py-3 space-y-1 overflow-y-auto max-h-36 leading-relaxed">
+              <p class="text-gray-400"><span class="text-cyan-accent">❯</span> claude --mode refactor auth</p>
+              <p class="text-gray-400"><span class="text-violet-accent">⠋</span> [Analysis] Indexing 14 source files in /Sources/SwarmDeck/App...</p>
+              <p class="text-emerald-400">✔ Generated AuthServiceTokenVerifier.swift (124 lines)</p>
+              <p class="text-emerald-400">✔ Updated SessionStore.swift with Sendable actor conformance</p>
+              <p class="text-gray-300 font-bold" id="simulatedConsoleTail"><span class="text-cyan-accent">⠋</span> Thinking... Validating compiler diagnostics with Swift 6 strict concurrency</p>
+            </div>
+
+            <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-gray-400">
+              <div class="flex items-center gap-2">
+                <span class="inline-block w-2 h-4 bg-cyan-accent animate-pulse"></span>
+                <span id="simulatedFooterInfo">Agente em fluxo autônomo contínuo.</span>
+              </div>
+              <span class="text-[10px] text-gray-500">OSC 133 Semantic Prompts: ON</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================================================== -->
+      <!-- STICKY CONTROL & FILTER COMMAND BAR -->
+      <!-- ===================================================================================== -->
+      <section id="controlBar" class="sticky top-4 z-40 mb-10 -mx-2 px-4 py-3.5 glass-surface rounded-2xl border border-white/15 shadow-2xl transition-all">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          
+          <!-- Stakeholder Persona Filter Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+            <span class="text-xs font-semibold text-gray-400 mr-1 shrink-0 uppercase tracking-wider hidden sm:inline">Perspectiva:</span>
+            
+            <button onclick="setPersona('all')" id="persona-all" class="persona-btn active px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 bg-cyan-accent text-obsidian-950 shadow-sm font-semibold">
+              Visão Completa
+            </button>
+            <button onclick="setPersona('po')" id="persona-po" class="persona-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 bg-obsidian-800 text-gray-300 hover:text-white hover:bg-obsidian-700 border border-white/5">
+              🎯 Product Owner (PO)
+            </button>
+            <button onclick="setPersona('gp')" id="persona-gp" class="persona-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 bg-obsidian-800 text-gray-300 hover:text-white hover:bg-obsidian-700 border border-white/5">
+              🛡️ Gerente de Projetos (GP)
+            </button>
+            <button onclick="setPersona('client')" id="persona-client" class="persona-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 bg-obsidian-800 text-gray-300 hover:text-white hover:bg-obsidian-700 border border-white/5">
+              💎 Cliente & Liderança
+            </button>
+          </div>
+
+          <!-- Real-Time Search with [⌘K] and Clear -->
+          <div class="flex items-center gap-3 w-full lg:w-auto">
+            <div class="relative w-full sm:w-80">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </span>
+              <input 
+                type="text" 
+                id="featureSearchInput" 
+                oninput="filterFeatures()" 
+                placeholder="Buscar funcionalidade, dor ou tech..." 
+                class="w-full pl-9 pr-14 py-1.5 rounded-xl bg-obsidian-900 border border-white/10 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-cyan-accent focus:ring-1 focus:ring-cyan-accent transition-all font-sans"
+              >
+              <kbd class="absolute inset-y-0 right-0 my-auto mr-2.5 h-5 px-1.5 rounded bg-obsidian-750 border border-white/10 text-[10px] font-mono text-gray-400 flex items-center pointer-events-none">
+                ⌘K
+              </kbd>
+            </div>
+
+            <!-- Global Accordion Toggle -->
+            <button onclick="toggleAllAccordions()" id="toggleAllBtn" class="shrink-0 px-3 py-1.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 border border-white/10 text-xs font-medium text-gray-300 hover:text-white transition-all flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-cyan-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+              <span id="toggleAllLabel">Expandir Todos</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Pillar Filter Pills Sub-bar -->
+        <div class="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2.5 border-t border-white/5 text-xs">
+          <div class="flex items-center gap-1.5 overflow-x-auto py-0.5">
+            <span class="text-[11px] font-mono text-gray-500 uppercase">Pilar:</span>
+            <button onclick="setPillar('all')" class="pillar-btn active px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/10 text-white transition-colors" data-pillar="all">Todos</button>
+            <button onclick="setPillar('capacity')" class="pillar-btn px-2.5 py-1 rounded-md text-[11px] font-medium text-gray-400 hover:text-white transition-colors" data-pillar="capacity">⚡ Multiplicação 1:N</button>
+            <button onclick="setPillar('visibility')" class="pillar-btn px-2.5 py-1 rounded-md text-[11px] font-medium text-gray-400 hover:text-white transition-colors" data-pillar="visibility">👁️ Visibilidade Total</button>
+            <button onclick="setPillar('stability')" class="pillar-btn px-2.5 py-1 rounded-md text-[11px] font-medium text-gray-400 hover:text-white transition-colors" data-pillar="stability">🛡️ Blindagem Operacional</button>
+            <button onclick="setPillar('apple')" class="pillar-btn px-2.5 py-1 rounded-md text-[11px] font-medium text-gray-400 hover:text-white transition-colors" data-pillar="apple">🍎 Experiência Nativa Mac</button>
+            <button onclick="setPillar('governance')" class="pillar-btn px-2.5 py-1 rounded-md text-[11px] font-medium text-gray-400 hover:text-white transition-colors" data-pillar="governance">🔄 Governança & Automação</button>
+          </div>
+
+          <!-- Dynamic Feature Count Badge -->
+          <div class="text-xs text-gray-400 font-mono">
+            Exibindo <span id="visibleCount" class="font-bold text-cyan-accent">10</span> de 10 funcionalidades
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================================== -->
+      <!-- THE 10 FEATURE CARDS GRID -->
+      <!-- ===================================================================================== -->
+      <section id="featuresGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- =================================================================================== -->
+        <!-- CARD 1: Central Unificada de Agentes em Paralelo -->
+        <!-- =================================================================================== -->
+        <article class="feature-card glass-surface rounded-2xl p-6 border border-white/10 hover:border-cyan-accent/40 transition-all flex flex-col justify-between shadow-apple-card group"
+                 data-personas="all po gp client" 
+                 data-pillar="capacity" 
+                 data-title="Central Unificada de Agentes em Paralelo Sidebar Multiplexer Cmd+1..9">
+          <div>
+            <!-- Header Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-cyan-500/10 text-cyan-accent border border-cyan-500/30 flex items-center gap-1">
+                ⚡ Multiplicação de Capacidade (1:N)
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Issue #7 • Validado
+              </span>
+            </div>
+
+            <!-- Title & Icon -->
+            <div class="flex items-start gap-3.5 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-accent flex items-center justify-center shrink-0 shadow-apple-glow-cyan">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white group-hover:text-cyan-accent transition-colors">
+                  Central Unificada de Agentes em Paralelo
+                </h3>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">Sidebar Multiplexer & Alternância Instantânea com ⌘1..9</p>
+              </div>
+            </div>
+
+            <!-- Value Comparison: Antes vs Com SwarmDeck -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+              <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
+                <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ❌ A Dor (Antes)
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Engenheiros perdidos em 8 abas de terminal dispersas, janelas sobrepostas e perda constante de foco a cada Alt+Tab sem saber qual agente está ativo.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ✨ Com SwarmDeck
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Painel lateral nativo estilo macOS com visão unificada, presets configurados e alternância instantânea com atalhos ⌘1 a ⌘9 com latência zero.
+                </p>
+              </div>
+            </div>
+
+            <!-- Cenário Real do Dia a Dia -->
+            <div class="mt-4 p-3 rounded-xl bg-obsidian-800 border border-white/5 text-xs text-gray-300">
+              <strong class="text-cyan-accent font-semibold block mb-1">💡 Cenário Prático:</strong>
+              Um único desenvolvedor comanda a refatoração do backend (Agente 1), criação de testes E2E (Agente 2) e documentação OpenAPI (Agente 3) simultaneamente, pulando de sessão em microssegundos.
+            </div>
+          </div>
+
+          <!-- Technical Accordion Drawer -->
+          <div class="mt-5 pt-4 border-t border-white/10">
+            <button onclick="toggleAccordion('acc-1')" class="w-full flex items-center justify-between text-xs font-mono text-gray-400 hover:text-white transition-colors group/btn">
+              <span class="flex items-center gap-1.5">
+                <span class="text-cyan-accent">⚙️</span> Por baixo do capô (Engenharia Swift)
+              </span>
+              <svg id="icon-acc-1" class="w-4 h-4 transform transition-transform text-gray-500 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div id="acc-1" class="accordion-content max-h-0 opacity-0 overflow-hidden text-xs text-gray-400 font-mono mt-2 space-y-2">
+              <div class="p-3 rounded-lg bg-obsidian-950 border border-white/5 space-y-1.5">
+                <p><span class="text-violet-accent">Componente:</span> <code>NavigationSplitView</code> &amp; <code>SessionStore</code> (@Observable)</p>
+                <p><span class="text-emerald-accent">Atalhos AppKit:</span> <code>.keyboardShortcut("1"..."9", modifiers: .command)</code></p>
+                <p><span class="text-cyan-accent">Presets Nativos:</span> Claude Code, Aider, Shell com variáveis de ambiente isoladas.</p>
+                <p><span class="text-amber-accent">Validação:</span> Validado via PR #26 (Issue #7). Zero flickering na alternância de sessões.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- =================================================================================== -->
+        <!-- CARD 2: Detecção Inteligente de Agente Bloqueado -->
+        <!-- =================================================================================== -->
+        <article class="feature-card glass-surface rounded-2xl p-6 border border-white/10 hover:border-emerald-accent/40 transition-all flex flex-col justify-between shadow-apple-card group"
+                 data-personas="all po gp client" 
+                 data-pillar="visibility" 
+                 data-title="Detecção Inteligente de Agente Bloqueado Agent State Detector OSC 133 Babá de Terminal">
+          <div>
+            <!-- Header Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                👁️ Visibilidade Total & Fim da 'Babá de Terminal'
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Issue #3 • Validado
+              </span>
+            </div>
+
+            <!-- Title & Icon -->
+            <div class="flex items-start gap-3.5 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-apple-glow-emerald">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
+                  Detecção Inteligente de Agente Bloqueado
+                </h3>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">Motor de Estado Multi-Tier com Semântica OSC 133</p>
+              </div>
+            </div>
+
+            <!-- Value Comparison -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+              <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
+                <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ❌ A Dor (Antes)
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  O agente para em um prompt (ex: "Proceed? [y/N]") e fica travado por 40 minutos desperdiçando tempo de sprint porque ninguém percebeu a espera.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ✨ Com SwarmDeck
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Motor autônomo analisa sequências ANSI e OSC 133 em tempo real: identifica em 250ms quando o agente aguarda decisão e muda o status visual.
+                </p>
+              </div>
+            </div>
+
+            <!-- Cenário Real -->
+            <div class="mt-4 p-3 rounded-xl bg-obsidian-800 border border-white/5 text-xs text-gray-300">
+              <strong class="text-emerald-400 font-semibold block mb-1">💡 Cenário Prático:</strong>
+              O Claude Code gera 18 alterações de arquivos e pede confirmação de execução de migração SQL. A sidebar acende imediatamente a luz vermelha de atenção e alerta o dev.
+            </div>
+          </div>
+
+          <!-- Technical Accordion Drawer -->
+          <div class="mt-5 pt-4 border-t border-white/10">
+            <button onclick="toggleAccordion('acc-2')" class="w-full flex items-center justify-between text-xs font-mono text-gray-400 hover:text-white transition-colors group/btn">
+              <span class="flex items-center gap-1.5">
+                <span class="text-emerald-accent">⚙️</span> Por baixo do capô (Engenharia Swift)
+              </span>
+              <svg id="icon-acc-2" class="w-4 h-4 transform transition-transform text-gray-500 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div id="acc-2" class="accordion-content max-h-0 opacity-0 overflow-hidden text-xs text-gray-400 font-mono mt-2 space-y-2">
+              <div class="p-3 rounded-lg bg-obsidian-950 border border-white/5 space-y-1.5">
+                <p><span class="text-violet-accent">Arquitetura:</span> <code>actor AgentStateDetector</code> thread-safe e reativo.</p>
+                <p><span class="text-emerald-accent">Parsing:</span> Regex com strip de ANSI escapes e detecção de Bell (`\x07`) e OSC 133 (`\x1b]133;B`).</p>
+                <p><span class="text-cyan-accent">Debounce Inteligente:</span> 250ms com <code>ContinuousClock</code> para acomodar pausas de streaming de LLMs.</p>
+                <p><span class="text-amber-accent">Validação:</span> Protótipo #3 e PR #13 integrados à suite de testes.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- =================================================================================== -->
+        <!-- CARD 3: Notificações Nativas do Mac com Foco Instantâneo -->
+        <!-- =================================================================================== -->
+        <article class="feature-card glass-surface rounded-2xl p-6 border border-white/10 hover:border-violet-accent/40 transition-all flex flex-col justify-between shadow-apple-card group"
+                 data-personas="all po gp" 
+                 data-pillar="governance" 
+                 data-title="Notificações Nativas do Mac com Foco Instantâneo UserNotifications Deep-Link">
+          <div>
+            <!-- Header Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-violet-500/10 text-violet-400 border border-violet-500/30 flex items-center gap-1">
+                🔄 Governança & Continuidade de Fluxo
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Issue #6 • Validado
+              </span>
+            </div>
+
+            <!-- Title & Icon -->
+            <div class="flex items-start gap-3.5 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 flex items-center justify-center shrink-0 shadow-apple-glow-violet">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white group-hover:text-violet-400 transition-colors">
+                  Notificações Nativas do Mac com Foco Instantâneo
+                </h3>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">UNUserNotificationCenter com Deep-Linking de Sessão</p>
+              </div>
+            </div>
+
+            <!-- Value Comparison -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+              <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
+                <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ❌ A Dor (Antes)
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Sem notificações confiáveis, o desenvolvedor precisa ficar alternando telas para checar o status de cada terminal manualmente, destruindo o estado de foco.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ✨ Com SwarmDeck
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Banners elegantes do macOS com som discreto; um simples clique no alerta traz o SwarmDeck para frente e seleciona automaticamente a sessão que precisa de ação.
+                </p>
+              </div>
+            </div>
+
+            <!-- Cenário Real -->
+            <div class="mt-4 p-3 rounded-xl bg-obsidian-800 border border-white/5 text-xs text-gray-300">
+              <strong class="text-violet-400 font-semibold block mb-1">💡 Cenário Prático:</strong>
+              Você está redigindo uma documentação no Notion. O Mac apita suavemente avisando que o Agente de Testes concluiu a suíte. Você clica e já está diante do relatório de sucesso.
+            </div>
+          </div>
+
+          <!-- Technical Accordion Drawer -->
+          <div class="mt-5 pt-4 border-t border-white/10">
+            <button onclick="toggleAccordion('acc-3')" class="w-full flex items-center justify-between text-xs font-mono text-gray-400 hover:text-white transition-colors group/btn">
+              <span class="flex items-center gap-1.5">
+                <span class="text-violet-accent">⚙️</span> Por baixo do capô (Engenharia Swift)
+              </span>
+              <svg id="icon-acc-3" class="w-4 h-4 transform transition-transform text-gray-500 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div id="acc-3" class="accordion-content max-h-0 opacity-0 overflow-hidden text-xs text-gray-400 font-mono mt-2 space-y-2">
+              <div class="p-3 rounded-lg bg-obsidian-950 border border-white/5 space-y-1.5">
+                <p><span class="text-violet-accent">Serviço:</span> <code>actor NotificationService</code> com rate-limiting de 3.0 segundos.</p>
+                <p><span class="text-emerald-accent">Framework Apple:</span> <code>UserNotifications.framework</code> nativo, sem dependências Node/Python.</p>
+                <p><span class="text-cyan-accent">Deep-Link:</span> Post de <code>.selectSessionNotification</code> com o UUID da sessão no payload.</p>
+                <p><span class="text-amber-accent">Validação:</span> Implementado na Issue #6 (PR #16).</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- =================================================================================== -->
+        <!-- CARD 4: Renderização Metal GPU a 120 FPS -->
+        <!-- =================================================================================== -->
+        <article class="feature-card glass-surface rounded-2xl p-6 border border-white/10 hover:border-cyan-accent/40 transition-all flex flex-col justify-between shadow-apple-card group"
+                 data-personas="all client po" 
+                 data-pillar="apple" 
+                 data-title="Renderização Metal GPU a 120 FPS libghostty Zig Metal Engine ProMotion">
+          <div>
+            <!-- Header Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-cyan-500/10 text-cyan-accent border border-cyan-500/30 flex items-center gap-1">
+                🍎 Experiência Nativa Apple (Metal GPU)
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Issue #8 • Validado
+              </span>
+            </div>
+
+            <!-- Title & Icon -->
+            <div class="flex items-start gap-3.5 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-accent flex items-center justify-center shrink-0 shadow-apple-glow-cyan">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white group-hover:text-cyan-accent transition-colors">
+                  Renderização Metal GPU a 120 FPS
+                </h3>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">Motor libghostty em Zig com Shaders Apple Metal</p>
+              </div>
+            </div>
+
+            <!-- Value Comparison -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+              <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
+                <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ❌ A Dor (Antes)
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Terminais baseados em Electron (DOM / xterm.js) consomem até 1.5GB de RAM por sessão, engasgam em telas ProMotion de 120Hz e esquentam a carcaça do Mac.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ✨ Com SwarmDeck
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Superfície desenhada diretamente pelos chips Apple Silicon via Metal GPU: rolagem a 120 FPS amanteigada, bateria gelada e menos de 15MB de memória base.
+                </p>
+              </div>
+            </div>
+
+            <!-- Cenário Real -->
+            <div class="mt-4 p-3 rounded-xl bg-obsidian-800 border border-white/5 text-xs text-gray-300">
+              <strong class="text-cyan-accent font-semibold block mb-1">💡 Cenário Prático:</strong>
+              Um agente cospe um diff de 6.000 linhas de código com sintaxe colorida em lote. A rolagem permanece a 120 quadros por segundo sem travar nem drenar a bateria do MacBook Pro.
+            </div>
+          </div>
+
+          <!-- Technical Accordion Drawer -->
+          <div class="mt-5 pt-4 border-t border-white/10">
+            <button onclick="toggleAccordion('acc-4')" class="w-full flex items-center justify-between text-xs font-mono text-gray-400 hover:text-white transition-colors group/btn">
+              <span class="flex items-center gap-1.5">
+                <span class="text-cyan-accent">⚙️</span> Por baixo do capô (Engenharia Swift)
+              </span>
+              <svg id="icon-acc-4" class="w-4 h-4 transform transition-transform text-gray-500 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div id="acc-4" class="accordion-content max-h-0 opacity-0 overflow-hidden text-xs text-gray-400 font-mono mt-2 space-y-2">
+              <div class="p-3 rounded-lg bg-obsidian-950 border border-white/5 space-y-1.5">
+                <p><span class="text-violet-accent">Core Engine:</span> <code>libghostty</code> compilada em Zig nativo para arquitetura arm64.</p>
+                <p><span class="text-emerald-accent">Pipeline Gráfico:</span> Renderização direta em <code>CAMetalLayer</code> com shaders Metal otimizados.</p>
+                <p><span class="text-cyan-accent">Zero WebView:</span> Sem Chromium, sem JavaScript V8, sem custos de DOM parsing.</p>
+                <p><span class="text-amber-accent">Validação:</span> Validado via PR #24 (Issue #8).</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- =================================================================================== -->
+        <!-- CARD 5: Escudo Anti-Congelamento por Carga de Dados -->
+        <!-- =================================================================================== -->
+        <article class="feature-card glass-surface rounded-2xl p-6 border border-white/10 hover:border-amber-accent/40 transition-all flex flex-col justify-between shadow-apple-card group"
+                 data-personas="all gp client" 
+                 data-pillar="stability" 
+                 data-title="Escudo Anti-Congelamento PTY Backpressure Stream Coalescer Beachball">
+          <div>
+            <!-- Header Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                🛡️ Blindagem Operacional & Estabilidade
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Issue #11 • Validado
+              </span>
+            </div>
+
+            <!-- Title & Icon -->
+            <div class="flex items-start gap-3.5 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 shadow-apple-glow-amber">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
+                  Escudo Anti-Congelamento por Carga de Dados
+                </h3>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">Contra-Pressão PTY & Coalescência de Streams a 60Hz</p>
+              </div>
+            </div>
+
+            <!-- Value Comparison -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+              <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
+                <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ❌ A Dor (Antes)
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Logs massivos de compilação ou cat acidental em arquivos binários causam o congelamento do terminal ('beachball'), forçando encerramento forçado do processo.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ✨ Com SwarmDeck
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  O Coalescer agrupa bytes em lotes de 64KB e sincroniza o envio para a UI em intervalos de 16ms, garantindo interface 100% reativa mesmo sob bombardeio de dados.
+                </p>
+              </div>
+            </div>
+
+            <!-- Cenário Real -->
+            <div class="mt-4 p-3 rounded-xl bg-obsidian-800 border border-white/5 text-xs text-gray-300">
+              <strong class="text-amber-400 font-semibold block mb-1">💡 Cenário Prático:</strong>
+              O agente roda um teste de regressão que cospe 35.000 linhas de stack trace em 1.5 segundo. O SwarmDeck absorve sem nenhum tremor visual ou perda de resposta no cursor.
+            </div>
+          </div>
+
+          <!-- Technical Accordion Drawer -->
+          <div class="mt-5 pt-4 border-t border-white/10">
+            <button onclick="toggleAccordion('acc-5')" class="w-full flex items-center justify-between text-xs font-mono text-gray-400 hover:text-white transition-colors group/btn">
+              <span class="flex items-center gap-1.5">
+                <span class="text-amber-accent">⚙️</span> Por baixo do capô (Engenharia Swift)
+              </span>
+              <svg id="icon-acc-5" class="w-4 h-4 transform transition-transform text-gray-500 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div id="acc-5" class="accordion-content max-h-0 opacity-0 overflow-hidden text-xs text-gray-400 font-mono mt-2 space-y-2">
+              <div class="p-3 rounded-lg bg-obsidian-950 border border-white/5 space-y-1.5">
+                <p><span class="text-violet-accent">Componente:</span> <code>PTYStreamCoalescer</code> com buffer circular de 64KB.</p>
+                <p><span class="text-emerald-accent">Pipeline Concorrente:</span> <code>AsyncStream&lt;Data&gt;(bufferingPolicy: .bufferingNewest(2000))</code>.</p>
+                <p><span class="text-cyan-accent">Locks sem Contenção:</span> Sincronização via <code>OSAllocatedUnfairLock</code> de altíssimo throughput.</p>
+                <p><span class="text-amber-accent">Validação:</span> Validado via PR #20 (Issue #11).</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- =================================================================================== -->
+        <!-- CARD 6: Detecção Automática do Ambiente Real do Mac -->
+        <!-- =================================================================================== -->
+        <article class="feature-card glass-surface rounded-2xl p-6 border border-white/10 hover:border-emerald-accent/40 transition-all flex flex-col justify-between shadow-apple-card group"
+                 data-personas="all po gp" 
+                 data-pillar="governance" 
+                 data-title="Detecção Automática do Ambiente Real Login Shell Harvester PATH Homebrew NVM">
+          <div>
+            <!-- Header Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                🔄 Governança & Continuidade de Fluxo
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Issue #10 • Validado
+              </span>
+            </div>
+
+            <!-- Title & Icon -->
+            <div class="flex items-start gap-3.5 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-apple-glow-emerald">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
+                  Detecção Automática do Ambiente Real do Mac
+                </h3>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">Login Shell Harvester: PATH, Homebrew, NVM & Chaves de API</p>
+              </div>
+            </div>
+
+            <!-- Value Comparison -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+              <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
+                <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ❌ A Dor (Antes)
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Apps GUI do Mac abrem com PATH padrão restrito (`/usr/bin`), gerando o frustrante erro 'command not found' para ferramentas do dev como `claude`, `node` ou `cargo`.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ✨ Com SwarmDeck
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  O Harvester extrai assincronamente as variáveis reais do shell de login (`.zshrc`) em menos de 800ms, injetando todo o ambiente completo nos agentes automaticamente.
+                </p>
+              </div>
+            </div>
+
+            <!-- Cenário Real -->
+            <div class="mt-4 p-3 rounded-xl bg-obsidian-800 border border-white/5 text-xs text-gray-300">
+              <strong class="text-emerald-400 font-semibold block mb-1">💡 Cenário Prático:</strong>
+              Você configurou chaves `ANTHROPIC_API_KEY` ou binários customizados no Homebrew. Ao iniciar uma sessão no SwarmDeck, tudo funciona de primeira sem configurações manuais.
+            </div>
+          </div>
+
+          <!-- Technical Accordion Drawer -->
+          <div class="mt-5 pt-4 border-t border-white/10">
+            <button onclick="toggleAccordion('acc-6')" class="w-full flex items-center justify-between text-xs font-mono text-gray-400 hover:text-white transition-colors group/btn">
+              <span class="flex items-center gap-1.5">
+                <span class="text-emerald-accent">⚙️</span> Por baixo do capô (Engenharia Swift)
+              </span>
+              <svg id="icon-acc-6" class="w-4 h-4 transform transition-transform text-gray-500 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div id="acc-6" class="accordion-content max-h-0 opacity-0 overflow-hidden text-xs text-gray-400 font-mono mt-2 space-y-2">
+              <div class="p-3 rounded-lg bg-obsidian-950 border border-white/5 space-y-1.5">
+                <p><span class="text-violet-accent">Serviço:</span> <code>ShellEnvironmentHarvester.shared</code> com cache atômico em memória.</p>
+                <p><span class="text-emerald-accent">Extração Não-Bloqueante:</span> Execução rápida com <code>Process()</code> e timeout seguro de 0.8s.</p>
+                <p><span class="text-cyan-accent">Isolamento:</span> Passado diretamente ao <code>posix_spawn</code> / <code>PTYService</code> das sessões filhas.</p>
+                <p><span class="text-amber-accent">Validação:</span> Validado via PR #18 (Issue #10).</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- =================================================================================== -->
+        <!-- CARD 7: Supervisor Anti-Zumbis e Encerramento Seguro -->
+        <!-- =================================================================================== -->
+        <article class="feature-card glass-surface rounded-2xl p-6 border border-white/10 hover:border-rose-accent/40 transition-all flex flex-col justify-between shadow-apple-card group"
+                 data-personas="all gp client" 
+                 data-pillar="stability" 
+                 data-title="Supervisor Anti-Zumbis Encerramento Seguro Trava Cmd+W POSIX SIGKILL">
+          <div>
+            <!-- Header Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30 flex items-center gap-1">
+                🛡️ Blindagem Operacional & Estabilidade
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Issue #5 • Validado
+              </span>
+            </div>
+
+            <!-- Title & Icon -->
+            <div class="flex items-start gap-3.5 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 shadow-apple-glow-rose">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white group-hover:text-rose-400 transition-colors">
+                  Supervisor Anti-Zumbis & Encerramento Seguro
+                </h3>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">POSIX Process Supervisor com Proteção contra ⌘W Acidental</p>
+              </div>
+            </div>
+
+            <!-- Value Comparison -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+              <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
+                <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ❌ A Dor (Antes)
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Processos de IA que continuam rodando como zumbis em background consumindo CPU e créditos de API; ou perda de 40 min de trabalho ao fechar uma aba sem querer com ⌘W.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ✨ Com SwarmDeck
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Supervisão POSIX garante colheita de zumbis via `waitpid()`, encerramento gracioso com dois estágios (`SIGTERM` + `SIGKILL`) e confirmação modal obrigatória se o agente estiver ativo.
+                </p>
+              </div>
+            </div>
+
+            <!-- Cenário Real -->
+            <div class="mt-4 p-3 rounded-xl bg-obsidian-800 border border-white/5 text-xs text-gray-300">
+              <strong class="text-rose-400 font-semibold block mb-1">💡 Cenário Prático:</strong>
+              O desenvolvedor esbarra no teclado e aperta ⌘W enquanto o agente aplica um refactor pesado. O SwarmDeck bloqueia o fechamento e pergunta antes de interromper a sessão.
+            </div>
+          </div>
+
+          <!-- Technical Accordion Drawer -->
+          <div class="mt-5 pt-4 border-t border-white/10">
+            <button onclick="toggleAccordion('acc-7')" class="w-full flex items-center justify-between text-xs font-mono text-gray-400 hover:text-white transition-colors group/btn">
+              <span class="flex items-center gap-1.5">
+                <span class="text-rose-accent">⚙️</span> Por baixo do capô (Engenharia Swift)
+              </span>
+              <svg id="icon-acc-7" class="w-4 h-4 transform transition-transform text-gray-500 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div id="acc-7" class="accordion-content max-h-0 opacity-0 overflow-hidden text-xs text-gray-400 font-mono mt-2 space-y-2">
+              <div class="p-3 rounded-lg bg-obsidian-950 border border-white/5 space-y-1.5">
+                <p><span class="text-violet-accent">Kernel Monitor:</span> <code>DispatchSource.makeProcessSource(identifier: pid, eventMask: .exit)</code>.</p>
+                <p><span class="text-emerald-accent">Reaper Não-Bloqueante:</span> Execução atômica de <code>waitpid(pid, &amp;status, WNOHANG)</code>.</p>
+                <p><span class="text-cyan-accent">Graceful Kill:</span> Envio de SIGTERM, aguarda 1.0s de grace period, fallback para SIGKILL se necessário.</p>
+                <p><span class="text-amber-accent">Validação:</span> Validado via PR #15 (Issue #5).</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- =================================================================================== -->
+        <!-- CARD 8: Ergonomia Visual com Zoom Fluido e Temas Mac -->
+        <!-- =================================================================================== -->
+        <article class="feature-card glass-surface rounded-2xl p-6 border border-white/10 hover:border-violet-accent/40 transition-all flex flex-col justify-between shadow-apple-card group"
+                 data-personas="all client po" 
+                 data-pillar="apple" 
+                 data-title="Ergonomia Visual com Zoom Fluido e Temas Mac Layout Sync TIOCSWINSZ Ghostty">
+          <div>
+            <!-- Header Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-violet-500/10 text-violet-400 border border-violet-500/30 flex items-center gap-1">
+                🍎 Experiência Nativa Apple (Ergonomia)
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Issue #8 • Validado
+              </span>
+            </div>
+
+            <!-- Title & Icon -->
+            <div class="flex items-start gap-3.5 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 flex items-center justify-center shrink-0 shadow-apple-glow-violet">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white group-hover:text-violet-400 transition-colors">
+                  Ergonomia Visual com Zoom Fluido & Temas Mac
+                </h3>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">Sincronização de Janela com TIOCSWINSZ e Atalhos ⌘+/⌘-</p>
+              </div>
+            </div>
+
+            <!-- Value Comparison -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+              <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
+                <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ❌ A Dor (Antes)
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Janelas redimensionadas que quebram o alinhamento de texto (caracteres cortados), fontes borradas sem antialiasing nativo e fadiga ocular ao longo de horas de uso.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ✨ Com SwarmDeck
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Redimensionamento em tempo real propagado ao PTY, suporte aos atalhos universais da Apple (⌘+, ⌘-, ⌘0) e tipografia nítida CoreText com ligaduras para programação.
+                </p>
+              </div>
+            </div>
+
+            <!-- Cenário Real -->
+            <div class="mt-4 p-3 rounded-xl bg-obsidian-800 border border-white/5 text-xs text-gray-300">
+              <strong class="text-violet-400 font-semibold block mb-1">💡 Cenário Prático:</strong>
+              Ao conectar o MacBook a um monitor externo Apple Studio Display 5K ou dividir a tela em Split View, o layout do terminal se adapta perfeitamente sem quebrar linhas de código.
+            </div>
+          </div>
+
+          <!-- Technical Accordion Drawer -->
+          <div class="mt-5 pt-4 border-t border-white/10">
+            <button onclick="toggleAccordion('acc-8')" class="w-full flex items-center justify-between text-xs font-mono text-gray-400 hover:text-white transition-colors group/btn">
+              <span class="flex items-center gap-1.5">
+                <span class="text-violet-accent">⚙️</span> Por baixo do capô (Engenharia Swift)
+              </span>
+              <svg id="icon-acc-8" class="w-4 h-4 transform transition-transform text-gray-500 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div id="acc-8" class="accordion-content max-h-0 opacity-0 overflow-hidden text-xs text-gray-400 font-mono mt-2 space-y-2">
+              <div class="p-3 rounded-lg bg-obsidian-950 border border-white/5 space-y-1.5">
+                <p><span class="text-violet-accent">Componente:</span> <code>TerminalContainerView</code> com bridging de shortcuts AppKit.</p>
+                <p><span class="text-emerald-accent">Sincronização PTY:</span> Chamadas de <code>ioctl(masterFd, TIOCSWINSZ, &amp;ws)</code> a 60Hz.</p>
+                <p><span class="text-cyan-accent">Atalhos Nativos:</span> <code>⌘+</code> (Zoom In), <code>⌘-</code> (Zoom Out), <code>⌘0</code> (Reset 100%), <code>⌘C/⌘V</code> integrados ao Pasteboard.</p>
+                <p><span class="text-amber-accent">Validação:</span> Validado via PR #24 (Issue #8).</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- =================================================================================== -->
+        <!-- CARD 9: Controle por Linha de Comando e Atalhos Globais -->
+        <!-- =================================================================================== -->
+        <article class="feature-card glass-surface rounded-2xl p-6 border border-white/10 hover:border-cyan-accent/40 transition-all flex flex-col justify-between shadow-apple-card group"
+                 data-personas="all po gp" 
+                 data-pillar="governance" 
+                 data-title="Controle por Linha de Comando Atalhos Globais Unix Socket IPC Raycast CLI">
+          <div>
+            <!-- Header Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-cyan-500/10 text-cyan-accent border border-cyan-500/30 flex items-center gap-1">
+                🔄 Governança, Automação & Extensibilidade
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Issue #12 • Validado
+              </span>
+            </div>
+
+            <!-- Title & Icon -->
+            <div class="flex items-start gap-3.5 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-accent flex items-center justify-center shrink-0 shadow-apple-glow-cyan">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white group-hover:text-cyan-accent transition-colors">
+                  Controle por Linha de Comando & Atalhos Globais
+                </h3>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">Unix Domain Socket IPC & Integração Nativa com Raycast / Alfred</p>
+              </div>
+            </div>
+
+            <!-- Value Comparison -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+              <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
+                <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ❌ A Dor (Antes)
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Obrigação de usar o mouse repetidamente para abrir janelas, selecionar menus e clicar em botões, quebrando o ritmo de desenvolvedores que usam Raycast ou Alfred.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ✨ Com SwarmDeck
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Servidor IPC local via Unix Domain Socket (`~/.swarmdeck/swarmdeck.sock`) com CLI `swarmdeck` para criar sessões, enviar comandos e consultar status em JSON.
+                </p>
+              </div>
+            </div>
+
+            <!-- Cenário Real -->
+            <div class="mt-4 p-3 rounded-xl bg-obsidian-800 border border-white/5 text-xs text-gray-300">
+              <strong class="text-cyan-accent font-semibold block mb-1">💡 Cenário Prático:</strong>
+              No Raycast, você digita `agent: refactor auth` e dá Enter. Um comando CLI dispara o socket do SwarmDeck, que cria a sessão no projeto certo sem você tocar no mouse.
+            </div>
+          </div>
+
+          <!-- Technical Accordion Drawer -->
+          <div class="mt-5 pt-4 border-t border-white/10">
+            <button onclick="toggleAccordion('acc-9')" class="w-full flex items-center justify-between text-xs font-mono text-gray-400 hover:text-white transition-colors group/btn">
+              <span class="flex items-center gap-1.5">
+                <span class="text-cyan-accent">⚙️</span> Por baixo do capô (Engenharia Swift)
+              </span>
+              <svg id="icon-acc-9" class="w-4 h-4 transform transition-transform text-gray-500 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div id="acc-9" class="accordion-content max-h-0 opacity-0 overflow-hidden text-xs text-gray-400 font-mono mt-2 space-y-2">
+              <div class="p-3 rounded-lg bg-obsidian-950 border border-white/5 space-y-1.5">
+                <p><span class="text-violet-accent">Servidor IPC:</span> <code>actor IPCService</code> ouvindo em socket POSIX com permissões `0600`.</p>
+                <p><span class="text-emerald-accent">Protocolo:</span> JSON streaming assíncrono com comandos <code>list</code>, <code>spawn</code>, <code>focus</code>, <code>kill</code>.</p>
+                <p><span class="text-cyan-accent">CLI Nativo:</span> Binário compilado leve para uso imediato em scripts bash/zsh e plugins.</p>
+                <p><span class="text-amber-accent">Validação:</span> Validado via PR #22 (Issue #12).</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- =================================================================================== -->
+        <!-- CARD 10: Aplicativo Mac Standalone Assinado e Pronto -->
+        <!-- =================================================================================== -->
+        <article class="feature-card glass-surface rounded-2xl p-6 border border-white/10 hover:border-emerald-accent/40 transition-all flex flex-col justify-between shadow-apple-card group"
+                 data-personas="all client po" 
+                 data-pillar="apple" 
+                 data-title="Aplicativo Mac Standalone Assinado e Pronto .app Packaging Entitlements Retina AppIcon">
+          <div>
+            <!-- Header Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                🍎 Experiência Nativa Apple (Empacotamento)
+              </span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Issue #9 • Validado
+              </span>
+            </div>
+
+            <!-- Title & Icon -->
+            <div class="flex items-start gap-3.5 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-apple-glow-emerald">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
+                  Aplicativo Mac Standalone Assinado & Pronto
+                </h3>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">Pacote .app Nativo, Entitlements Darwin & AppIcon Retina</p>
+              </div>
+            </div>
+
+            <!-- Value Comparison -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+              <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
+                <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ❌ A Dor (Antes)
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Projetos que exigem compilação manual de 20 dependências, scripts obscuros de terminal ou ícone em branco na Dock sem integração com o sistema operacional.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  ✨ Com SwarmDeck
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Pacote `SwarmDeck.app` pronto para arrastar para a pasta `/Applications`, com ícone Retina de alta resolução, permissões adequadas e suporte a Hardened Runtime.
+                </p>
+              </div>
+            </div>
+
+            <!-- Cenário Real -->
+            <div class="mt-4 p-3 rounded-xl bg-obsidian-800 border border-white/5 text-xs text-gray-300">
+              <strong class="text-emerald-400 font-semibold block mb-1">💡 Cenário Prático:</strong>
+              A liderança ou o time de DevOps distribui o SwarmDeck para os desenvolvedores via MDM ou download direto; a instalação leva 5 segundos com zero atrito de TI.
+            </div>
+          </div>
+
+          <!-- Technical Accordion Drawer -->
+          <div class="mt-5 pt-4 border-t border-white/10">
+            <button onclick="toggleAccordion('acc-10')" class="w-full flex items-center justify-between text-xs font-mono text-gray-400 hover:text-white transition-colors group/btn">
+              <span class="flex items-center gap-1.5">
+                <span class="text-emerald-accent">⚙️</span> Por baixo do capô (Engenharia Swift)
+              </span>
+              <svg id="icon-acc-10" class="w-4 h-4 transform transition-transform text-gray-500 group-hover/btn:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div id="acc-10" class="accordion-content max-h-0 opacity-0 overflow-hidden text-xs text-gray-400 font-mono mt-2 space-y-2">
+              <div class="p-3 rounded-lg bg-obsidian-950 border border-white/5 space-y-1.5">
+                <p><span class="text-violet-accent">Packaging:</span> Bundle macOS padrão com <code>Info.plist</code> configurado e <code>AppIcon.icns</code> (16px a 1024px).</p>
+                <p><span class="text-emerald-accent">Entitlements:</span> Configuração de segurança Darwin com suporte a subprocessos e sem sandbox restritivo.</p>
+                <p><span class="text-cyan-accent">Build Autônomo:</span> <code>make app</code> gera o binário release com otimizações `-O` completas.</p>
+                <p><span class="text-amber-accent">Validação:</span> Validado via PR #28 (Issue #9).</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ===================================================================================== -->
+      <!-- INTERACTIVE SECTION 2: SIMULADOR EXECUTIVO DE PRODUTIVIDADE & ROI FINANCEIRO -->
+      <!-- ===================================================================================== -->
+      <section class="mt-16 bg-gradient-to-br from-obsidian-850 via-obsidian-900 to-obsidian-850 rounded-2xl p-6 sm:p-8 border border-white/15 shadow-2xl relative overflow-hidden">
+        
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/10">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-accent text-xs font-mono font-semibold mb-2">
+              💰 Retorno sobre Investimento
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white">Simulador de Produtividade & Economia Financeira</h2>
+            <p class="text-xs sm:text-sm text-gray-300 mt-1 max-w-2xl">
+              Calcule em tempo real o impacto tangível da orquestração multi-agente sem atrito na sua operação de engenharia.
+            </p>
+          </div>
+
+          <!-- Currency Selector Toggle -->
+          <div class="flex items-center gap-1.5 p-1 bg-obsidian-950 rounded-xl border border-white/10 shrink-0 self-start lg:self-center">
+            <button onclick="setCurrency('BRL')" id="currBRL" class="px-3 py-1 rounded-lg text-xs font-bold bg-cyan-accent text-obsidian-950 transition-all">
+              R$ (BRL)
+            </button>
+            <button onclick="setCurrency('USD')" id="currUSD" class="px-3 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition-all">
+              $ (USD)
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8 items-start">
+          
+          <!-- Sliders Controls (Col 5) -->
+          <div class="lg:col-span-5 space-y-5 bg-obsidian-950/60 p-5 rounded-xl border border-white/5">
+            
+            <!-- Slider 1: Número de Devs -->
+            <div>
+              <div class="flex items-center justify-between text-xs font-medium text-gray-300 mb-2">
+                <span>Tamanho do Time de Engenharia:</span>
+                <span class="font-mono text-cyan-accent font-bold text-sm" id="devCountVal">5 devs</span>
+              </div>
+              <input type="range" id="devCount" min="1" max="50" value="5" oninput="updateROICalculator()" class="w-full">
+              <div class="flex justify-between text-[10px] text-gray-500 font-mono mt-1">
+                <span>1 dev</span>
+                <span>25 devs</span>
+                <span>50 devs</span>
+              </div>
+            </div>
+
+            <!-- Slider 2: Agentes Simultâneos por Dev -->
+            <div>
+              <div class="flex items-center justify-between text-xs font-medium text-gray-300 mb-2">
+                <span>Agentes Simultâneos em Paralelo / Dev:</span>
+                <span class="font-mono text-emerald-accent font-bold text-sm" id="agentCountVal">3 agentes</span>
+              </div>
+              <input type="range" id="agentCount" min="1" max="8" value="3" oninput="updateROICalculator()" class="w-full">
+              <div class="flex justify-between text-[10px] text-gray-500 font-mono mt-1">
+                <span>1 (sequencial)</span>
+                <span>4 agentes</span>
+                <span>8 (máx)</span>
+              </div>
+            </div>
+
+            <!-- Slider 3: Horas Ociosas Evitadas por Agente/Dia -->
+            <div>
+              <div class="flex items-center justify-between text-xs font-medium text-gray-300 mb-2">
+                <span>Horas de Espera Ociosa Evitadas / Agente / Dia:</span>
+                <span class="font-mono text-violet-accent font-bold text-sm" id="hoursSavedVal">1.5 horas</span>
+              </div>
+              <input type="range" id="hoursSaved" min="0.5" max="4.0" step="0.5" value="1.5" oninput="updateROICalculator()" class="w-full">
+              <div class="flex justify-between text-[10px] text-gray-500 font-mono mt-1">
+                <span>30 min</span>
+                <span>2 horas</span>
+                <span>4 horas</span>
+              </div>
+            </div>
+
+            <!-- Slider 4: Custo/Hora da Engenharia -->
+            <div>
+              <div class="flex items-center justify-between text-xs font-medium text-gray-300 mb-2">
+                <span>Custo Médio da Hora de Engenharia:</span>
+                <span class="font-mono text-amber-accent font-bold text-sm" id="hourlyRateVal">R$ 160 / h</span>
+              </div>
+              <input type="range" id="hourlyRate" min="40" max="450" step="10" value="160" oninput="updateROICalculator()" class="w-full">
+              <div class="flex justify-between text-[10px] text-gray-500 font-mono mt-1">
+                <span id="rateMinLabel">R$ 40/h</span>
+                <span id="rateMidLabel">R$ 240/h</span>
+                <span id="rateMaxLabel">R$ 450/h</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Dynamic Output Metrics (Col 7) -->
+          <div class="lg:col-span-7 flex flex-col justify-between gap-5">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <!-- Output 1: Horas Salvas no Mês -->
+              <div class="glass-surface p-5 rounded-xl border border-white/10 text-left relative overflow-hidden">
+                <div class="text-[11px] font-mono text-cyan-accent uppercase tracking-wider font-semibold">
+                  Horas Produtivas Recuperadas / Mês
+                </div>
+                <div class="text-3xl sm:text-4xl font-extrabold text-white mt-2 font-mono" id="monthlyHoursSavedResult">
+                  338 h
+                </div>
+                <p class="text-xs text-gray-400 mt-1">
+                  Tempo antes perdido checando terminais travados ou esperando compilações sequenciais.
+                </p>
+              </div>
+
+              <!-- Output 2: Economia Mensal -->
+              <div class="glass-surface p-5 rounded-xl border border-emerald-500/20 text-left bg-emerald-500/5 relative overflow-hidden">
+                <div class="text-[11px] font-mono text-emerald-400 uppercase tracking-wider font-semibold">
+                  Economia Financeira Estimada / Mês
+                </div>
+                <div class="text-3xl sm:text-4xl font-extrabold text-emerald-400 mt-2 font-mono" id="monthlySavingsResult">
+                  R$ 54.080
+                </div>
+                <p class="text-xs text-gray-400 mt-1">
+                  Redução direta de custos invisíveis de ociosidade técnica por sprint.
+                </p>
+              </div>
+
+              <!-- Output 3: Economia Anual -->
+              <div class="glass-surface p-5 rounded-xl border border-violet-500/20 text-left bg-violet-500/5 sm:col-span-2 relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                  <div class="text-[11px] font-mono text-violet-400 uppercase tracking-wider font-semibold">
+                    Retorno Financeiro Projetado / Ano (ROI Anual)
+                  </div>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 font-bold border border-violet-500/30">
+                    Impacto Enterprise
+                  </span>
+                </div>
+                <div class="text-3xl sm:text-5xl font-black text-white mt-2 font-mono tracking-tight" id="annualSavingsResult">
+                  R$ 648.960
+                </div>
+                <div class="flex items-center gap-3 mt-3 pt-3 border-t border-white/10 text-xs text-gray-300">
+                  <span class="flex items-center gap-1 text-emerald-400 font-semibold font-mono">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                    +240% Throughput de Sprints
+                  </span>
+                  <span class="text-gray-400">•</span>
+                  <span class="text-gray-300">Equivalente a contratar <strong class="text-white" id="equivalentDevsCount">2.4 engenheiros adicionais</strong> a custo zero.</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Visual Bar Comparison -->
+            <div class="p-4 rounded-xl bg-obsidian-950 border border-white/5">
+              <div class="flex items-center justify-between text-xs font-mono text-gray-400 mb-2">
+                <span>Distribuição do Tempo de Sprint:</span>
+                <span class="text-cyan-accent font-bold" id="productivityBoostPercentage">+320% Produtivo</span>
+              </div>
+              <div class="w-full h-3 rounded-full bg-obsidian-800 overflow-hidden flex">
+                <div id="productiveBar" class="h-full bg-gradient-to-r from-cyan-accent to-emerald-400 transition-all duration-300" style="width: 78%;"></div>
+                <div id="idleBar" class="h-full bg-rose-500/50 transition-all duration-300" style="width: 22%;"></div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-gray-400 font-mono mt-2">
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-cyan-accent inline-block"></span> Tempo Produtivo / Foco Alto</span>
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500/60 inline-block"></span> Espera / Alternância de Janelas</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ===================================================================================== -->
+      <!-- TECHNICAL VALIDATION MATRIX: SWARMDECK VS CONCORRENTES -->
+      <!-- ===================================================================================== -->
+      <section class="mt-16 pt-8 border-t border-white/10">
+        
+        <div class="text-center max-w-3xl mx-auto mb-10">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs font-mono font-semibold mb-2">
+            🔬 Prova de Engenharia
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white">Por que o SwarmDeck Supera Abordagens Convencionais</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">
+            Comparação técnica fundamentada entre nossa arquitetura nativa macOS e alternativas baseadas em Electron ou scripts de terminal.
+          </p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-white/10 text-[11px] font-mono text-gray-400 uppercase tracking-wider">
+                <th class="py-3 px-4">Critério de Engenharia &amp; Negócio</th>
+                <th class="py-3 px-4 text-cyan-accent bg-cyan-500/5 rounded-t-lg">SwarmDeck (Swift + Metal)</th>
+                <th class="py-3 px-4 text-gray-400">Wrappers Electron (xterm.js)</th>
+                <th class="py-3 px-4 text-gray-400">Terminal Puro (tmux / tabs)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 font-mono text-gray-300">
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="py-3 px-4 font-sans font-medium text-white">Renderização Gráfica & Latência</td>
+                <td class="py-3 px-4 text-cyan-accent bg-cyan-500/5 font-bold">&lt; 1ms (Metal GPU Shaders)</td>
+                <td class="py-3 px-4 text-rose-400">45ms - 120ms (DOM / Canvas)</td>
+                <td class="py-3 px-4 text-gray-400">5ms - 15ms (CPU Software)</td>
+              </tr>
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="py-3 px-4 font-sans font-medium text-white">Consumo de Memória (RAM por sessão)</td>
+                <td class="py-3 px-4 text-emerald-400 bg-cyan-500/5 font-bold">~15 MB por instância</td>
+                <td class="py-3 px-4 text-rose-400">800 MB - 1.5 GB (Chromium V8)</td>
+                <td class="py-3 px-4 text-gray-400">~20 MB por sessão</td>
+              </tr>
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="py-3 px-4 font-sans font-medium text-white">Detecção de Bloqueio de Agente</td>
+                <td class="py-3 px-4 text-emerald-400 bg-cyan-500/5 font-bold">Nativa (OSC 133 + Regex 250ms)</td>
+                <td class="py-3 px-4 text-yellow-400">Limitada ou inexistente</td>
+                <td class="py-3 px-4 text-rose-400">Nenhuma (100% manual)</td>
+              </tr>
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="py-3 px-4 font-sans font-medium text-white">Notificações com Deep-Link ao Mac</td>
+                <td class="py-3 px-4 text-emerald-400 bg-cyan-500/5 font-bold">Sim (UserNotifications + Foco ⌘1..9)</td>
+                <td class="py-3 px-4 text-yellow-400">Genéricas sem foco de sessão</td>
+                <td class="py-3 px-4 text-rose-400">Nenhuma nativa</td>
+              </tr>
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="py-3 px-4 font-sans font-medium text-white">Gestão Anti-Zumbis (POSIX Reaper)</td>
+                <td class="py-3 px-4 text-emerald-400 bg-cyan-500/5 font-bold">Sim (DispatchSourceProcess + waitpid)</td>
+                <td class="py-3 px-4 text-rose-400">Processos órfãos frequentes</td>
+                <td class="py-3 px-4 text-yellow-400">Requer scripts shell externos</td>
+              </tr>
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="py-3 px-4 font-sans font-medium text-white">Preservação de Bateria no MacBook</td>
+                <td class="py-3 px-4 text-emerald-400 bg-cyan-500/5 font-bold">Excelente (GPU em repouso ativo)</td>
+                <td class="py-3 px-4 text-rose-400">Péssima (Aquecimento e throttling)</td>
+                <td class="py-3 px-4 text-emerald-400">Excelente</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+
+      <!-- ===================================================================================== -->
+      <!-- EXECUTIVE FOOTER -->
+      <!-- ===================================================================================== -->
+      <footer class="mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 font-mono">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-cyan-accent"></span>
+          <span>SwarmDeck © 2026 • Projetado com Obsessão por Performance para Apple Silicon</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <span class="px-2 py-0.5 rounded bg-obsidian-800 border border-white/10 text-gray-300">Swift 6.0</span>
+          <span class="px-2 py-0.5 rounded bg-obsidian-800 border border-white/10 text-gray-300">libghostty (Zig)</span>
+          <span class="px-2 py-0.5 rounded bg-obsidian-800 border border-white/10 text-gray-300">Metal GPU</span>
+          <span class="px-2 py-0.5 rounded bg-obsidian-800 border border-white/10 text-gray-300">macOS 14+</span>
+          <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="text-cyan-accent hover:underline flex items-center gap-1 font-sans font-semibold">
+            Voltar ao Topo ↑
+          </button>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- ========================================================================================= -->
+  <!-- JAVASCRIPT: REATIVIDADE, SIMULADORES E FILTROS EM TEMPO REAL -->
+  <!-- ========================================================================================= -->
+  <script>
+    // ESTADO DA APLICAÇÃO
+    let currentPersona = 'all';
+    let currentPillar = 'all';
+    let currentCurrency = 'BRL';
+    let allAccordionsExpanded = false;
+
+    // =========================================================================================
+    // 1. FILTROS DE PERSONA & PILAR
+    // =========================================================================================
+    function setPersona(persona) {
+      currentPersona = persona;
+      
+      // Update buttons
+      document.querySelectorAll('.persona-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-cyan-accent', 'text-obsidian-950', 'font-semibold');
+        btn.classList.add('bg-obsidian-800', 'text-gray-300');
+      });
+      
+      const activeBtn = document.getElementById('persona-' + persona);
+      if (activeBtn) {
+        activeBtn.classList.add('active', 'bg-cyan-accent', 'text-obsidian-950', 'font-semibold');
+        activeBtn.classList.remove('bg-obsidian-800', 'text-gray-300');
+      }
+
+      filterFeatures();
+    }
+
+    function setPillar(pillar) {
+      currentPillar = pillar;
+
+      document.querySelectorAll('.pillar-btn').forEach(btn => {
+        if (btn.getAttribute('data-pillar') === pillar) {
+          btn.classList.add('active', 'bg-white/10', 'text-white');
+          btn.classList.remove('text-gray-400');
+        } else {
+          btn.classList.remove('active', 'bg-white/10', 'text-white');
+          btn.classList.add('text-gray-400');
+        }
+      });
+
+      filterFeatures();
+    }
+
+    function filterFeatures() {
+      const query = (document.getElementById('featureSearchInput').value || '').toLowerCase().trim();
+      const cards = document.querySelectorAll('.feature-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const personas = card.getAttribute('data-personas') || '';
+        const pillar = card.getAttribute('data-pillar') || '';
+        const cardTitle = (card.getAttribute('data-title') || '').toLowerCase();
+        const cardContent = card.innerText.toLowerCase();
+
+        const matchesPersona = (currentPersona === 'all') || personas.includes(currentPersona);
+        const matchesPillar = (currentPillar === 'all') || (pillar === currentPillar);
+        const matchesSearch = (!query) || cardTitle.includes(query) || cardContent.includes(query);
+
+        if (matchesPersona && matchesPillar && matchesSearch) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      document.getElementById('visibleCount').textContent = visibleCount;
+    }
+
+    // Atalho global [⌘K] para focar na busca
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('featureSearchInput');
+        searchInput.focus();
+        searchInput.select();
+      }
+    });
+
+    // =========================================================================================
+    // 2. ACORDEÕES TÉCNICOS
+    // =========================================================================================
+    function toggleAccordion(id) {
+      const content = document.getElementById(id);
+      const icon = document.getElementById('icon-' + id);
+      if (!content) return;
+
+      const isCollapsed = content.style.maxHeight === '0px' || !content.style.maxHeight;
+
+      if (isCollapsed) {
+        content.style.maxHeight = content.scrollHeight + 'px';
+        content.style.opacity = '1';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      } else {
+        content.style.maxHeight = '0px';
+        content.style.opacity = '0';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function toggleAllAccordions() {
+      allAccordionsExpanded = !allAccordionsExpanded;
+      const accordions = document.querySelectorAll('.accordion-content');
+      const toggleLabel = document.getElementById('toggleAllLabel');
+
+      accordions.forEach(acc => {
+        const id = acc.id;
+        const icon = document.getElementById('icon-' + id);
+        if (allAccordionsExpanded) {
+          acc.style.maxHeight = acc.scrollHeight + 'px';
+          acc.style.opacity = '1';
+          if (icon) icon.style.transform = 'rotate(180deg)';
+        } else {
+          acc.style.maxHeight = '0px';
+          acc.style.opacity = '0';
+          if (icon) icon.style.transform = 'rotate(0deg)';
+        }
+      });
+
+      if (toggleLabel) {
+        toggleLabel.textContent = allAccordionsExpanded ? 'Recolher Todos' : 'Expandir Todos';
+      }
+    }
+
+    // =========================================================================================
+    // 3. SIMULADOR AO VIVO DE ESTADOS DO AGENTE (LIVE LAB)
+    // =========================================================================================
+    function simulateAgentState(state) {
+      const sessionItem = document.getElementById('simulatedSessionItem');
+      const statusDot = document.getElementById('simulatedStatusDot');
+      const statusText = document.getElementById('simulatedStatusText');
+      const badge = document.getElementById('simulatedBadge');
+      const consoleTail = document.getElementById('simulatedConsoleTail');
+      const footerInfo = document.getElementById('simulatedFooterInfo');
+      const toast = document.getElementById('macosNotificationToast');
+
+      if (state === 'working') {
+        statusDot.className = 'w-3 h-3 rounded-full bg-emerald-400 animate-pulse shadow-apple-glow-emerald';
+        statusText.textContent = 'Processando tokens (Metal 120 FPS)...';
+        badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold';
+        badge.textContent = 'WORKING';
+        sessionItem.className = 'p-3 rounded-lg border transition-all duration-300 bg-obsidian-800 border-emerald-500/30';
+        consoleTail.innerHTML = '<span class="text-cyan-accent">⠋</span> [Streaming] Generando teste de carga para PTYStreamCoalescerTests.swift...';
+        footerInfo.textContent = 'Agente ativo. Renderização Metal direta a 120 FPS.';
+        dismissToast();
+      } else if (state === 'blocked') {
+        statusDot.className = 'w-3 h-3 rounded-full bg-rose-500 animate-ping shadow-apple-glow-rose';
+        statusText.textContent = 'Aguardando Aprovação (y/n)';
+        badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold';
+        badge.textContent = 'BLOCKED (PROMPT)';
+        sessionItem.className = 'p-3 rounded-lg border transition-all duration-300 bg-rose-950/20 border-rose-500/50 shadow-apple-glow-rose';
+        consoleTail.innerHTML = '<span class="text-rose-400 font-bold">❯ Apply these changes to database migration schema? [y/N]: </span>';
+        footerInfo.textContent = 'Estado bloqueado detectado via OSC 133 em 250ms!';
+        
+        // Show simulated macOS notification
+        toast.classList.remove('hidden');
+      } else if (state === 'idle') {
+        statusDot.className = 'w-3 h-3 rounded-full bg-cyan-accent';
+        statusText.textContent = 'Pronto / Aguardando comando';
+        badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-obsidian-750 text-cyan-accent border border-white/10 font-semibold';
+        badge.textContent = 'IDLE (SHELL)';
+        sessionItem.className = 'p-3 rounded-lg border transition-all duration-300 bg-obsidian-800 border-white/10';
+        consoleTail.innerHTML = '<span class="text-emerald-400">✔ Sessão finalizada com sucesso em 14.8s (Exit code 0).</span><br><span class="text-cyan-accent">❯</span> _';
+        footerInfo.textContent = 'Processo monitorado por DispatchSourceProcess supervisor.';
+        dismissToast();
+      }
+    }
+
+    function dismissToast() {
+      const toast = document.getElementById('macosNotificationToast');
+      toast.classList.add('hidden');
+    }
+
+    function focusSimulatedSession() {
+      dismissToast();
+      const sessionItem = document.getElementById('simulatedSessionItem');
+      sessionItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      sessionItem.classList.add('ring-2', 'ring-cyan-accent');
+      setTimeout(() => {
+        sessionItem.classList.remove('ring-2', 'ring-cyan-accent');
+      }, 1500);
+    }
+
+    // =========================================================================================
+    // 4. SIMULADOR DE ROI E PRODUTIVIDADE
+    // =========================================================================================
+    function setCurrency(curr) {
+      currentCurrency = curr;
+      const btnBRL = document.getElementById('currBRL');
+      const btnUSD = document.getElementById('currUSD');
+
+      if (curr === 'BRL') {
+        btnBRL.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-cyan-accent text-obsidian-950 transition-all';
+        btnUSD.className = 'px-3 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition-all';
+        document.getElementById('rateMinLabel').textContent = 'R$ 40/h';
+        document.getElementById('rateMidLabel').textContent = 'R$ 240/h';
+        document.getElementById('rateMaxLabel').textContent = 'R$ 450/h';
+      } else {
+        btnUSD.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-cyan-accent text-obsidian-950 transition-all';
+        btnBRL.className = 'px-3 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition-all';
+        document.getElementById('rateMinLabel').textContent = '$ 20/h';
+        document.getElementById('rateMidLabel').textContent = '$ 80/h';
+        document.getElementById('rateMaxLabel').textContent = '$ 150/h';
+      }
+
+      updateROICalculator();
+    }
+
+    function updateROICalculator() {
+      const devs = parseInt(document.getElementById('devCount').value, 10);
+      const agents = parseInt(document.getElementById('agentCount').value, 10);
+      const hoursSavedPerDay = parseFloat(document.getElementById('hoursSaved').value);
+      const rate = parseInt(document.getElementById('hourlyRate').value, 10);
+
+      // Labels update
+      document.getElementById('devCountVal').textContent = devs + (devs > 1 ? ' devs' : ' dev');
+      document.getElementById('agentCountVal').textContent = agents + (agents > 1 ? ' agentes' : ' agente');
+      document.getElementById('hoursSavedVal').textContent = hoursSavedPerDay.toFixed(1) + ' horas';
+      
+      const symbol = (currentCurrency === 'BRL') ? 'R$' : '$';
+      document.getElementById('hourlyRateVal').textContent = `${symbol} ${rate} / h`;
+
+      // Cálculos: 21 dias úteis por mês
+      // Fator de simultaneidade: cada agente adicional rende ganhos substanciais de paralelismo
+      const concurrencyFactor = 0.85;
+      const totalHoursSavedMonth = Math.round(devs * (agents * hoursSavedPerDay * concurrencyFactor) * 21);
+      const monthlySavings = Math.round(totalHoursSavedMonth * rate);
+      const annualSavings = Math.round(monthlySavings * 12);
+      
+      // Equivalência de engenheiros adicionais contratados (168h padrão mês)
+      const equivalentDevs = (totalHoursSavedMonth / 168).toFixed(1);
+
+      // Render resultados
+      document.getElementById('monthlyHoursSavedResult').textContent = `${totalHoursSavedMonth.toLocaleString('pt-BR')} h`;
+      document.getElementById('monthlySavingsResult').textContent = `${symbol} ${monthlySavings.toLocaleString('pt-BR')}`;
+      document.getElementById('annualSavingsResult').textContent = `${symbol} ${annualSavings.toLocaleString('pt-BR')}`;
+      document.getElementById('equivalentDevsCount').textContent = `${equivalentDevs} engenheiros adicionais`;
+
+      // Barra visual de produtividade
+      const baseProductive = 50;
+      const extraBoost = Math.min(45, (agents - 1) * 8 + (hoursSavedPerDay * 6));
+      const productivePercentage = Math.round(baseProductive + extraBoost);
+      const idlePercentage = 100 - productivePercentage;
+
+      document.getElementById('productiveBar').style.width = productivePercentage + '%';
+      document.getElementById('idleBar').style.width = idlePercentage + '%';
+      document.getElementById('productivityBoostPercentage').textContent = `+${Math.round(extraBoost * 7.5)}% Throughput`;
+    }
+
+    // Inicialização ao carregar a página
+    document.addEventListener('DOMContentLoaded', () => {
+      updateROICalculator();
+      filterFeatures();
+    });
+  </script>
+
+</body>
+</html>
