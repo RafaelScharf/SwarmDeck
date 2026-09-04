@@ -51,6 +51,7 @@ Sources/SwarmDeck/
 - [Prototype: Sidebar & Multi-Session Architecture](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-sidebar-multisession-resolution.md) ([#4](https://github.com/RafaelScharf/SwarmDeck/issues/4)) — Native `@Observable` architecture with `NavigationSplitView` allows multiplexing parallel background sessions with zero UI lag and no memory leaks.
 - [Prototype: Process Lifecycle Supervisor & Configurable Spawning](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/task-process-lifecycle-supervisor-resolution.md) ([#5](https://github.com/RafaelScharf/SwarmDeck/issues/5)) — `DispatchSourceProcess` monitoring `.exit` with immediate `waitpid` reaps child processes to prevent zombies, decodes POSIX exit statuses, escalates `SIGTERM` to `SIGKILL` gracefully, and supports `AgentPreset` models with custom working directories and enriched environment inheritance.
 - [Prototype: System Notifications via UNUserNotificationCenter](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-system-notifications-resolution.md) ([#6](https://github.com/RafaelScharf/SwarmDeck/issues/6)) — Multi-backend `NotificationService` actor with debounced rate-limiting, foreground suppression, background agent state triggers (`.blocked`, `.working` -> `.idle`, non-zero `.exited`), and deep-link session focusing via `UNUserNotificationCenterDelegate`.
+- [Prototype: macOS Login Shell Environment Harvesting](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-shell-environment-harvesting-resolution.md) ([#10](https://github.com/RafaelScharf/SwarmDeck/issues/10)) — Asynchronous login shell harvesting (`/usr/bin/env -0` with `printenv` fallback) protected by an 800ms timeout watchdog, null-delimited token parsing, in-memory caching, and automatic terminal defaults injection (`TERM=xterm-256color`, `COLORTERM=truecolor`).
 
 ## Active Tickets
 
@@ -61,7 +62,7 @@ Sources/SwarmDeck/
 - [x] [Prototype: Process Lifecycle Supervisor & Configurable Spawning](https://github.com/RafaelScharf/SwarmDeck/issues/5)
 - [x] [Prototype: System Notifications via UNUserNotificationCenter](https://github.com/RafaelScharf/SwarmDeck/issues/6)
 - [ ] [Prototype: Terminal Surface Shortcuts, Clipboard & Layout Sync](https://github.com/RafaelScharf/SwarmDeck/issues/8)
-- [ ] [Prototype: macOS Login Shell Environment Harvesting](https://github.com/RafaelScharf/SwarmDeck/issues/10)
+- [x] [Prototype: macOS Login Shell Environment Harvesting](https://github.com/RafaelScharf/SwarmDeck/issues/10)
 - [ ] [Prototype: PTY High-Throughput Backpressure & Stream Coalescing](https://github.com/RafaelScharf/SwarmDeck/issues/11)
 - [ ] [Prototype: Unix Domain Socket IPC & CLI Dispatcher](https://github.com/RafaelScharf/SwarmDeck/issues/12)
 

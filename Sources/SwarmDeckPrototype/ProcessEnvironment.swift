@@ -1,14 +1,36 @@
 import Foundation
 
 /// Utilities for resolving CLI executables and inheriting/enriching process environment variables.
-public enum ProcessEnvironment {
+public final class ProcessEnvironment: @unchecked Sendable {
+    private static let lock = NSLock()
+    nonisolated(unsafe) private static var _cachedHarvestedEnvironment: [String: String]?
+    
+    public static func setHarvestedCache(_ env: [String: String]) {
+        lock.lock()
+        defer { lock.unlock() }
+        _cachedHarvestedEnvironment = env
+    }
+    
+    public static func clearHarvestedCache() {
+        lock.lock()
+        defer { lock.unlock() }
+        _cachedHarvestedEnvironment = nil
+    }
+    
+    public static var cachedHarvestedEnvironment: [String: String]? {
+        lock.lock()
+        defer { lock.unlock() }
+        return _cachedHarvestedEnvironment
+    }
+
     /// Returns the directories to search for binaries, combining the active PATH
     /// with common macOS directories where user CLI tools (Homebrew, uv/pip, cargo, npm) reside.
     public static func standardSearchPaths() -> [String] {
         var paths: [String] = []
         
-        // 1. Inherit paths from existing PATH environment variable
-        if let pathEnv = ProcessInfo.processInfo.environment["PATH"] {
+        // 1. Inherit paths from harvested environment or existing PATH environment variable
+        let pathSource = cachedHarvestedEnvironment?["PATH"] ?? ProcessInfo.processInfo.environment["PATH"]
+        if let pathEnv = pathSource {
             for segment in pathEnv.components(separatedBy: ":") where !segment.isEmpty {
                 if !paths.contains(segment) {
                     paths.append(segment)
@@ -72,7 +94,7 @@ public enum ProcessEnvironment {
     /// - Sets terminal capabilities: TERM=xterm-256color, COLORTERM=truecolor, LANG=en_US.UTF-8
     /// - Merges custom overrides passed by the caller
     public static func buildEnvironment(customOverrides: [String: String] = [:]) -> [String: String] {
-        var env = ProcessInfo.processInfo.environment
+        var env = cachedHarvestedEnvironment ?? ProcessInfo.processInfo.environment
         
         // Enforce enriched PATH
         env["PATH"] = standardSearchPaths().joined(separator: ":")

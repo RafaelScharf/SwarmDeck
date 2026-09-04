@@ -27,6 +27,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 await NotificationService.shared.requestAuthorization()
             }
         }
+        
+        // Asynchronously harvest login shell environment in background
+        Task.detached(priority: .userInitiated) {
+            await ShellEnvironmentHarvester.shared.harvest()
+        }
     }
     
     // Handle notification click / deep-link
