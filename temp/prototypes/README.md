@@ -23,3 +23,9 @@ This directory temporarily archives the standalone spike scripts, mock runners, 
 * **Goal**: Validate macOS 14+ `@Observable` with `NavigationSplitView` for multiple concurrent background sessions.
 * **Branch**: `prototype/multi-session-sidebar` (contains the prototype app in `Sources/SwarmDeckPrototype`).
 * **Key Finding**: `.id(sessionId)` on `TerminalSurfaceView` allows instant switching between sessions without memory leaks or main-thread lag.
+
+### 4. Process Lifecycle Supervisor & Configurable Spawning (Issue #5 / `feat/issue-5-process-supervisor`)
+* **Goal**: Validate background PTY process supervision (exit detection via `DispatchSourceProcess`, zombie prevention via automatic `waitpid` reaping, graceful termination with SIGTERM escalation to SIGKILL) and configurable agent spawning (`AgentPreset`, custom cwd, enriched PATH and environment inheritance).
+* **Scripts**:
+  * [`test_lifecycle_supervisor.swift`](test_lifecycle_supervisor.swift): Automated 33-point validation test suite covering preset models, binary resolution (`claude`, `aider`, `agy`), exit status decoding, zombie reaping verification (`waitpid` returns -1 `ECHILD`), graceful signal termination, and PTY execution with custom CWD and environment.
+* **Key Finding**: Pre-allocating `argv` and `envp` pointers before `forkpty` guarantees async-signal safety in the child without heap allocation/locks. `DispatchSourceProcess` monitoring `.exit` combined with non-blocking POSIX `waitpid` reliably prevents zombie processes and updates agent state to `.exited(code)`.
