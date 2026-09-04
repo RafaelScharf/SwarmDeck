@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutorial: Como Iniciar e Testar o SwarmDeck</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              base: '#090d13',
+              surface: '#0d1117',
+              card: '#161b22',
+              cardHover: '#1c2128',
+              border: 'rgba(255, 255, 255, 0.08)',
+              borderHover: 'rgba(255, 255, 255, 0.16)'
+            },
+            neon: {
+              cyan: '#00F5D4',
+              emerald: '#10B981',
+              violet: '#8B5CF6',
+              amber: '#F59E0B',
+              rose: '#F43F5E',
+              blue: '#38BDF8'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Inter', 'Segoe UI', 'sans-serif'],
+            mono: ['SF Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Estilos de alta fidelidade sem filtros de desfoque pesados para evitar sobrecarga de GPU */
+    body {
+      background-color: #090d13;
+      color: #e6edf3;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mac-window {
+      background: #0d1117;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+
+    .code-box {
+      background: #090d13;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: 'SF Mono', Menlo, Monaco, monospace;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #21262d;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #30363d;
+    }
+
+    .tab-active {
+      background-color: #161b22;
+      color: #00F5D4;
+      border-bottom: 2px solid #00F5D4;
+    }
+
+    .tab-inactive {
+      color: #8b949e;
+    }
+    .tab-inactive:hover {
+      color: #e6edf3;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#090d13] text-[#e6edf3] antialiased selection:bg-neon-cyan/20 selection:text-neon-cyan">
+
+  <!-- Container Geral da Janela Mac -->
+  <div class="max-w-6xl mx-auto px-4 py-8 sm:py-12">
+
+    <!-- Top Window Chrome (macOS Window Style) -->
+    <div class="mac-window rounded-2xl overflow-hidden mb-8">
+      
+      <!-- Window Title Bar -->
+      <div class="bg-[#161b22] px-5 py-3.5 border-b border-white/10 flex items-center justify-between select-none">
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E]"></div>
+          <div class="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123]"></div>
+          <div class="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29]"></div>
+          <span class="ml-3 text-xs font-medium text-gray-400 font-mono">SwarmDeck — Guia de Inicialização & Testes</span>
+        </div>
+        <div class="flex items-center space-x-3 text-xs">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>
+            Protótipo 100% Validado
+          </span>
+          <a href="showcase_mapa_funcionalidades.html" target="_blank" class="text-xs text-neon-cyan hover:underline flex items-center gap-1 font-medium">
+            Ver Mapa de Funcionalidades ↗
+          </a>
+        </div>
+      </div>
+
+      <!-- Hero Header Section -->
+      <div class="p-6 sm:p-10 border-b border-white/5 bg-gradient-to-b from-[#161b22]/40 to-transparent">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-neon-cyan/10 border border-neon-cyan/20 text-neon-cyan text-xs font-semibold uppercase tracking-wider mb-3">
+              <span>🚀 Guia Prático Passo a Passo</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3">
+              Como Iniciar e Testar o SwarmDeck
+            </h1>
+            <p class="text-gray-400 text-sm sm:text-base max-w-2xl leading-relaxed">
+              O SwarmDeck já possui uma versão executável completa com todos os 10 subsistemas integrados (GPU Metal 120 FPS, multiplexador de agentes, detector de bloqueios, socket IPC e notificações nativas). Escolha a forma de execução ideal abaixo.
+            </p>
+          </div>
+
+          <!-- Quick Launch Box -->
+          <div class="bg-[#090d13] p-4 rounded-xl border border-white/10 flex flex-col gap-2 min-w-[280px]">
+            <div class="flex items-center justify-between text-xs text-gray-400">
+              <span class="font-mono text-neon-cyan">⚡ Inicialização Mais Rápida</span>
+              <span class="text-gray-500">macOS Nativo</span>
+            </div>
+            <div class="relative group">
+              <input type="text" readonly value="open build/Release/SwarmDeck.app" class="w-full bg-[#161b22] text-xs font-mono text-emerald-400 px-3 py-2 rounded-lg border border-white/10 focus:outline-none cursor-text select-all">
+              <button onclick="copyCommand('open build/Release/SwarmDeck.app', this)" class="mt-2 w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                <span>Copiar Comando e Abrir App</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Banner -->
+      <div class="grid grid-cols-2 md:grid-cols-4 border-b border-white/10 bg-[#0d1117] divide-x divide-white/5 text-center">
+        <div class="p-4">
+          <div class="text-xs text-gray-400 mb-1">Status da Versão</div>
+          <div class="text-sm font-semibold text-emerald-400 flex items-center justify-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Integrada & Pronta
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="text-xs text-gray-400 mb-1">Pacote Nativo</div>
+          <div class="text-sm font-semibold text-white font-mono">SwarmDeck.app (Release)</div>
+        </div>
+        <div class="p-4">
+          <div class="text-xs text-gray-400 mb-1">Requisitos</div>
+          <div class="text-sm font-semibold text-white">macOS 14+ (Sonoma / Sequoia)</div>
+        </div>
+        <div class="p-4">
+          <div class="text-xs text-gray-400 mb-1">Engine Gráfica</div>
+          <div class="text-sm font-semibold text-neon-cyan">Metal GPU (libghostty)</div>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="p-6 sm:p-10 space-y-12">
+
+        <!-- Seção 1: Métodos de Execução (Tabs) -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                <span class="text-neon-cyan font-mono">01.</span> Escolha como Iniciar
+              </h2>
+              <p class="text-xs text-gray-400 mt-0.5">Clique nas abas abaixo para ver as instruções de cada forma de execução.</p>
+            </div>
+          </div>
+
+          <!-- Nav Tabs -->
+          <div class="flex border-b border-white/10 space-x-1 mb-6">
+            <button onclick="switchTab('tab-app', this)" class="tab-button tab-active px-4 py-2.5 text-xs sm:text-sm font-medium rounded-t-lg transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              Método 1: App Nativo (.app)
+              <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-mono">Recomendado</span>
+            </button>
+            <button onclick="switchTab('tab-swift', this)" class="tab-button tab-inactive px-4 py-2.5 text-xs sm:text-sm font-medium rounded-t-lg transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              Método 2: Swift Run (Dev CLI)
+            </button>
+            <button onclick="switchTab('tab-ipc', this)" class="tab-button tab-inactive px-4 py-2.5 text-xs sm:text-sm font-medium rounded-t-lg transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              Método 3: Socket IPC & Raycast
+            </button>
+          </div>
+
+          <!-- Tab 1: App Nativo (.app) -->
+          <div id="tab-app" class="tab-content block space-y-4">
+            <div class="bg-[#161b22] border border-white/10 rounded-xl p-5 space-y-4">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h3 class="text-base font-semibold text-white">Executar o Aplicativo macOS Standalone</h3>
+                  <p class="text-xs text-gray-400 mt-1 leading-relaxed">
+                    O aplicativo já foi empacotado em modo <strong>Release</strong> com ícone Retina de alta resolução, assinado com os <em>entitlements</em> necessários (sem sandbox restritivo para permitir execução real de processos PTY e leitura do seu login shell).
+                  </p>
+                </div>
+                <span class="px-2.5 py-1 text-xs rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono shrink-0">1-Click</span>
+              </div>
+
+              <!-- Comandos de Inicialização -->
+              <div class="space-y-3 pt-2">
+                <div>
+                  <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
+                    <span class="font-medium text-gray-300">1. Abrir o aplicativo diretamente:</span>
+                    <span class="text-[11px] text-gray-500">Executa o bundle nativo</span>
+                  </div>
+                  <div class="code-box rounded-lg p-3 flex items-center justify-between group">
+                    <code class="text-xs text-neon-cyan">open build/Release/SwarmDeck.app</code>
+                    <button onclick="copyCommand('open build/Release/SwarmDeck.app', this)" class="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded transition-colors flex items-center gap-1 font-mono">
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
+                    <span class="font-medium text-gray-300">2. Ou via Makefile (atalho conveniente):</span>
+                  </div>
+                  <div class="code-box rounded-lg p-3 flex items-center justify-between group">
+                    <code class="text-xs text-neon-cyan">make run</code>
+                    <button onclick="copyCommand('make run', this)" class="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded transition-colors flex items-center gap-1 font-mono">
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
+                    <span class="font-medium text-gray-300">3. Se quiser recompilar do zero e gerar novo pacote:</span>
+                  </div>
+                  <div class="code-box rounded-lg p-3 flex items-center justify-between group">
+                    <code class="text-xs text-neon-cyan">make app && make run</code>
+                    <button onclick="copyCommand('make app && make run', this)" class="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded transition-colors flex items-center gap-1 font-mono">
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
+                    <span class="font-medium text-gray-300">4. Instalar como app definitivo no macOS (via DMG):</span>
+                  </div>
+                  <div class="code-box rounded-lg p-3 flex items-center justify-between group">
+                    <code class="text-xs text-neon-cyan">open build/Release/SwarmDeck.dmg</code>
+                    <button onclick="copyCommand('open build/Release/SwarmDeck.dmg', this)" class="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded transition-colors flex items-center gap-1 font-mono">
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 2: Swift Run (Dev) -->
+          <div id="tab-swift" class="tab-content hidden space-y-4">
+            <div class="bg-[#161b22] border border-white/10 rounded-xl p-5 space-y-4">
+              <div>
+                <h3 class="text-base font-semibold text-white">Rodar via Swift Package Manager (Terminal)</h3>
+                <p class="text-xs text-gray-400 mt-1 leading-relaxed">
+                  Ideal para acompanhar logs em tempo real no console (como saídas de debug de redimensionamento do PTY, conexões IPC e eventos do sistema).
+                </p>
+              </div>
+
+              <div class="space-y-3 pt-2">
+                <div>
+                  <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
+                    <span class="font-medium text-gray-300">Versão de Produção (Arquitetura Modular Completa):</span>
+                  </div>
+                  <div class="code-box rounded-lg p-3 flex items-center justify-between group">
+                    <code class="text-xs text-emerald-400">swift run SwarmDeck</code>
+                    <button onclick="copyCommand('swift run SwarmDeck', this)" class="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded transition-colors flex items-center gap-1 font-mono">
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
+                    <span class="font-medium text-gray-300">Versão Consolidada do Protótipo Inicial:</span>
+                  </div>
+                  <div class="code-box rounded-lg p-3 flex items-center justify-between group">
+                    <code class="text-xs text-emerald-400">swift run SwarmDeckPrototype</code>
+                    <button onclick="copyCommand('swift run SwarmDeckPrototype', this)" class="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded transition-colors flex items-center gap-1 font-mono">
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3: Socket IPC -->
+          <div id="tab-ipc" class="tab-content hidden space-y-4">
+            <div class="bg-[#161b22] border border-white/10 rounded-xl p-5 space-y-4">
+              <div>
+                <h3 class="text-base font-semibold text-white">Controle Remoto via Unix Domain Socket</h3>
+                <p class="text-xs text-gray-400 mt-1 leading-relaxed">
+                  Com o SwarmDeck aberto em background, ele cria o socket em <code class="text-neon-cyan font-mono">/tmp/swarmdeck.sock</code>. Você pode controlar seus agentes de qualquer outro terminal ou via Raycast/Alfred.
+                </p>
+              </div>
+
+              <div class="space-y-3 pt-2">
+                <div>
+                  <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
+                    <span class="font-medium text-gray-300">Testar se o servidor está ativo (Ping):</span>
+                  </div>
+                  <div class="code-box rounded-lg p-3 flex items-center justify-between group">
+                    <code class="text-xs text-neon-blue">swift temp/prototypes/swarmdeck_cli.swift ping</code>
+                    <button onclick="copyCommand('swift temp/prototypes/swarmdeck_cli.swift ping', this)" class="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded transition-colors flex items-center gap-1 font-mono">
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
+                    <span class="font-medium text-gray-300">Listar todos os agentes ativos e seus estados:</span>
+                  </div>
+                  <div class="code-box rounded-lg p-3 flex items-center justify-between group">
+                    <code class="text-xs text-neon-blue">swift temp/prototypes/swarmdeck_cli.swift list</code>
+                    <button onclick="copyCommand('swift temp/prototypes/swarmdeck_cli.swift list', this)" class="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded transition-colors flex items-center gap-1 font-mono">
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between text-xs text-gray-400 mb-1.5">
+                    <span class="font-medium text-gray-300">Disparar um novo agente (ex: Claude Code no diretório atual):</span>
+                  </div>
+                  <div class="code-box rounded-lg p-3 flex items-center justify-between group">
+                    <code class="text-xs text-neon-blue">swift temp/prototypes/swarmdeck_cli.swift run --preset claude</code>
+                    <button onclick="copyCommand('swift temp/prototypes/swarmdeck_cli.swift run --preset claude', this)" class="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded transition-colors flex items-center gap-1 font-mono">
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção 2: Roteiro de Testes Interativos -->
+        <div>
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span class="text-neon-cyan font-mono">02.</span> Roteiro de Testes: O que Você Deve Experimentar
+            </h2>
+            <p class="text-xs text-gray-400 mt-1">Siga este roteiro prático dentro do aplicativo para validar a experiência na prática:</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Card 1: Alternância Rápida -->
+            <div class="bg-[#161b22] border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="w-8 h-8 rounded-lg bg-neon-cyan/10 text-neon-cyan flex items-center justify-center font-mono font-bold text-sm">1</span>
+                <div>
+                  <h3 class="text-sm font-semibold text-white">Navegação Ultrarrápida por Atalhos</h3>
+                  <span class="text-[11px] text-gray-400">Atalhos ⌘1 a ⌘9</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                Ao abrir o app, 3 sessões são criadas automaticamente (<code class="text-gray-300">Zsh</code>, <code class="text-gray-300">Claude</code> e <code class="text-gray-300">Antigravity</code>).
+              </p>
+              <div class="bg-[#090d13] p-3 rounded-lg border border-white/5 text-xs text-gray-300 space-y-1">
+                <div>👉 Pressione <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ 1</kbd> para focar no Terminal Shell.</div>
+                <div>👉 Pressione <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ 2</kbd> para alternar para o Claude Code.</div>
+                <div>👉 Pressione <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ 3</kbd> para alternar para o Antigravity.</div>
+              </div>
+            </div>
+
+            <!-- Card 2: Criar Nova Sessão -->
+            <div class="bg-[#161b22] border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="w-8 h-8 rounded-lg bg-neon-emerald/10 text-emerald-400 flex items-center justify-center font-mono font-bold text-sm">2</span>
+                <div>
+                  <h3 class="text-sm font-semibold text-white">Criar Nova Sessão de Agente</h3>
+                  <span class="text-[11px] text-gray-400">Atalhos ⌘N ou ⌘T</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                Adicione quantos agentes desejar de forma paralela e independente.
+              </p>
+              <div class="bg-[#090d13] p-3 rounded-lg border border-white/5 text-xs text-gray-300 space-y-1">
+                <div>👉 Pressione <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ N</kbd> ou clique no botão <span class="font-bold text-white">[ + ]</span> no topo da barra lateral.</div>
+                <div>👉 Escolha um preset integrado (<code class="text-gray-300">Aider</code>, <code class="text-gray-300">Claude</code>) ou defina comando customizado.</div>
+                <div>👉 Selecione a pasta de trabalho desejada pelo seletor de arquivos.</div>
+              </div>
+            </div>
+
+            <!-- Card 3: Zoom e Temas -->
+            <div class="bg-[#161b22] border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="w-8 h-8 rounded-lg bg-neon-violet/10 text-violet-400 flex items-center justify-center font-mono font-bold text-sm">3</span>
+                <div>
+                  <h3 class="text-sm font-semibold text-white">Zoom Fluido de Fonte & Troca de Temas</h3>
+                  <span class="text-[11px] text-gray-400">Renderização Metal GPU</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                Ajuste a legibilidade dinamicamente e troque a paleta de cores em tempo real.
+              </p>
+              <div class="bg-[#090d13] p-3 rounded-lg border border-white/5 text-xs text-gray-300 space-y-1">
+                <div>👉 Use <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ +</kbd> e <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ -</kbd> para alterar o tamanho da fonte.</div>
+                <div>👉 Use <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ 0</kbd> para resetar para 13pt.</div>
+                <div>👉 Clique no menu <span class="text-white font-medium">Theme</span> no cabeçalho e alterne entre <em>Tokyo Night</em>, <em>Dracula</em>, <em>Nord</em> ou <em>Catppuccin</em>.</div>
+              </div>
+            </div>
+
+            <!-- Card 4: Detecção de Bloqueio & Notificação -->
+            <div class="bg-[#161b22] border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="w-8 h-8 rounded-lg bg-neon-rose/10 text-rose-400 flex items-center justify-center font-mono font-bold text-sm">4</span>
+                <div>
+                  <h3 class="text-sm font-semibold text-white">Detecção de Bloqueio & Notificações</h3>
+                  <span class="text-[11px] text-gray-400">Deep-Link Nativo</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                O detector analisa se o processo está em execução (🟢) ou aguardando resposta humana (🔴).
+              </p>
+              <div class="bg-[#090d13] p-3 rounded-lg border border-white/5 text-xs text-gray-300 space-y-1">
+                <div>👉 Quando um agente fizer uma pergunta com opções [Y/n], o indicador muda para <span class="text-rose-400 font-bold">Blocked: Prompt</span>.</div>
+                <div>👉 O macOS emitirá uma notificação nativa com som.</div>
+                <div>👉 Ao clicar no banner de notificação, o SwarmDeck foca diretamente no agente que pediu atenção!</div>
+              </div>
+            </div>
+
+            <!-- Card 5: Limpeza de Buffer -->
+            <div class="bg-[#161b22] border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="w-8 h-8 rounded-lg bg-neon-amber/10 text-amber-400 flex items-center justify-center font-mono font-bold text-sm">5</span>
+                <div>
+                  <h3 class="text-sm font-semibold text-white">Limpeza Rápida de Buffer (Clear)</h3>
+                  <span class="text-[11px] text-gray-400">Atalho ⌘K</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                Mesmo após logs de milhares de linhas, limpe o histórico visual instantaneamente.
+              </p>
+              <div class="bg-[#090d13] p-3 rounded-lg border border-white/5 text-xs text-gray-300 space-y-1">
+                <div>👉 Pressione <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ K</kbd> ou clique no botão <span class="text-white font-medium">Clear</span> no topo do terminal.</div>
+                <div>👉 Todo o scrollback da sessão ativa é limpo sem interromper a execução do processo.</div>
+              </div>
+            </div>
+
+            <!-- Card 6: Proteção Anti-Acidente -->
+            <div class="bg-[#161b22] border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="w-8 h-8 rounded-lg bg-neon-blue/10 text-sky-400 flex items-center justify-center font-mono font-bold text-sm">6</span>
+                <div>
+                  <h3 class="text-sm font-semibold text-white">Guarda de Proteção Anti-Acidente</h3>
+                  <span class="text-[11px] text-gray-400">Atalho ⌘W com Confirmação</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                Evita encerramento acidental de agentes que estejam executando tarefas críticas.
+              </p>
+              <div class="bg-[#090d13] p-3 rounded-lg border border-white/5 text-xs text-gray-300 space-y-1">
+                <div>👉 Em uma sessão que esteja trabalhando (🟢), pressione <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ W</kbd>.</div>
+                <div>👉 Um diálogo nativo alertará: <span class="text-amber-300">"Session is currently running commands. Terminating it may interrupt active operations."</span></div>
+                <div>👉 Permite cancelar ou confirmar o encerramento seguro.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Seção 3: Checklist Interativo de Teste -->
+        <div class="bg-[#161b22] border border-white/10 rounded-2xl p-6 sm:p-8">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                <span class="text-neon-cyan font-mono">03.</span> Checklist Interativo de Validação
+              </h2>
+              <p class="text-xs text-gray-400 mt-1">Marque cada item conforme você for testando no aplicativo:</p>
+            </div>
+            
+            <!-- Barra de Progresso Dinâmica -->
+            <div class="bg-[#090d13] p-3 rounded-xl border border-white/10 min-w-[220px]">
+              <div class="flex justify-between text-xs mb-1.5 font-medium">
+                <span class="text-gray-400">Seu Progresso:</span>
+                <span id="progressText" class="text-neon-cyan font-mono font-bold">0 de 7 (0%)</span>
+              </div>
+              <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                <div id="progressBar" class="bg-gradient-to-r from-neon-cyan to-emerald-400 h-full w-0 transition-all duration-300"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Itens do Checklist -->
+          <div class="space-y-3" id="checklistContainer">
+            <label class="flex items-center gap-3 p-3 rounded-lg bg-[#090d13]/70 hover:bg-[#090d13] border border-white/5 cursor-pointer transition-colors">
+              <input type="checkbox" onchange="updateChecklist()" class="test-item w-4 h-4 rounded bg-[#161b22] border-white/20 text-neon-cyan focus:ring-0 focus:ring-offset-0 cursor-pointer">
+              <span class="text-xs sm:text-sm text-gray-300">1. Abri o aplicativo via <code class="text-emerald-400 font-mono">open build/Release/SwarmDeck.app</code> com sucesso.</span>
+            </label>
+
+            <label class="flex items-center gap-3 p-3 rounded-lg bg-[#090d13]/70 hover:bg-[#090d13] border border-white/5 cursor-pointer transition-colors">
+              <input type="checkbox" onchange="updateChecklist()" class="test-item w-4 h-4 rounded bg-[#161b22] border-white/20 text-neon-cyan focus:ring-0 focus:ring-offset-0 cursor-pointer">
+              <span class="text-xs sm:text-sm text-gray-300">2. Alternei suavemente entre as sessões usando os atalhos de teclado <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ 1</kbd>, <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ 2</kbd> e <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ 3</kbd>.</span>
+            </label>
+
+            <label class="flex items-center gap-3 p-3 rounded-lg bg-[#090d13]/70 hover:bg-[#090d13] border border-white/5 cursor-pointer transition-colors">
+              <input type="checkbox" onchange="updateChecklist()" class="test-item w-4 h-4 rounded bg-[#161b22] border-white/20 text-neon-cyan focus:ring-0 focus:ring-offset-0 cursor-pointer">
+              <span class="text-xs sm:text-sm text-gray-300">3. Criei um novo terminal com <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ N</kbd> ou pelo botão <span class="font-bold text-white">[ + ]</span>.</span>
+            </label>
+
+            <label class="flex items-center gap-3 p-3 rounded-lg bg-[#090d13]/70 hover:bg-[#090d13] border border-white/5 cursor-pointer transition-colors">
+              <input type="checkbox" onchange="updateChecklist()" class="test-item w-4 h-4 rounded bg-[#161b22] border-white/20 text-neon-cyan focus:ring-0 focus:ring-offset-0 cursor-pointer">
+              <span class="text-xs sm:text-sm text-gray-300">4. Modifiquei o tamanho da fonte com <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ +</kbd> e resetei com <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ 0</kbd>.</span>
+            </label>
+
+            <label class="flex items-center gap-3 p-3 rounded-lg bg-[#090d13]/70 hover:bg-[#090d13] border border-white/5 cursor-pointer transition-colors">
+              <input type="checkbox" onchange="updateChecklist()" class="test-item w-4 h-4 rounded bg-[#161b22] border-white/20 text-neon-cyan focus:ring-0 focus:ring-offset-0 cursor-pointer">
+              <span class="text-xs sm:text-sm text-gray-300">5. Troquei o tema visual do Ghostty (ex: testei <em>Tokyo Night</em> ou <em>Dracula</em>).</span>
+            </label>
+
+            <label class="flex items-center gap-3 p-3 rounded-lg bg-[#090d13]/70 hover:bg-[#090d13] border border-white/5 cursor-pointer transition-colors">
+              <input type="checkbox" onchange="updateChecklist()" class="test-item w-4 h-4 rounded bg-[#161b22] border-white/20 text-neon-cyan focus:ring-0 focus:ring-offset-0 cursor-pointer">
+              <span class="text-xs sm:text-sm text-gray-300">6. Limpei a tela com <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ K</kbd> e testei o colar com <kbd class="px-1.5 py-0.5 bg-white/10 rounded font-mono text-[11px]">⌘ V</kbd>.</span>
+            </label>
+
+            <label class="flex items-center gap-3 p-3 rounded-lg bg-[#090d13]/70 hover:bg-[#090d13] border border-white/5 cursor-pointer transition-colors">
+              <input type="checkbox" onchange="updateChecklist()" class="test-item w-4 h-4 rounded bg-[#161b22] border-white/20 text-neon-cyan focus:ring-0 focus:ring-offset-0 cursor-pointer">
+              <span class="text-xs sm:text-sm text-gray-300">7. Testei o comando CLI no terminal: <code class="text-neon-cyan font-mono">swift temp/prototypes/swarmdeck_cli.swift ping</code> e recebi <code class="text-emerald-400 font-mono">pong</code>.</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Seção 4: Dúvidas Frequentes & Resolução de Problemas (FAQ) -->
+        <div>
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span class="text-neon-cyan font-mono">04.</span> Dúvidas Frequentes & Resolução de Problemas
+            </h2>
+          </div>
+
+          <div class="space-y-3">
+            
+            <details class="bg-[#161b22] border border-white/10 rounded-xl p-4 group">
+              <summary class="text-sm font-semibold text-white cursor-pointer list-none flex items-center justify-between">
+                <span>O macOS exibiu aviso de segurança "Aplicativo de desenvolvedor não verificado"?</span>
+                <span class="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div class="mt-3 text-xs text-gray-400 leading-relaxed space-y-2 border-t border-white/5 pt-3">
+                <p>O pacote foi assinado localmente com assinatura ad-hoc (<code class="text-emerald-400 font-mono">codesign -s -</code>). Se o Gatekeeper bloquear a abertura pela primeira vez, execute no terminal:</p>
+                <div class="code-box p-2.5 rounded text-neon-cyan font-mono text-xs flex justify-between items-center">
+                  <span>xattr -cr build/Release/SwarmDeck.app</span>
+                  <button onclick="copyCommand('xattr -cr build/Release/SwarmDeck.app', this)" class="text-gray-400 hover:text-white text-[11px] bg-white/5 px-2 py-0.5 rounded">Copiar</button>
+                </div>
+                <p>Isso remove o atributo de quarentena do macOS e permite abrir imediatamente.</p>
+              </div>
+            </details>
+
+            <details class="bg-[#161b22] border border-white/10 rounded-xl p-4 group">
+              <summary class="text-sm font-semibold text-white cursor-pointer list-none flex items-center justify-between">
+                <span>O comando do agente (ex: claude ou agy) não foi encontrado?</span>
+                <span class="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div class="mt-3 text-xs text-gray-400 leading-relaxed space-y-2 border-t border-white/5 pt-3">
+                <p>O SwarmDeck inclui o <strong>ShellEnvironmentHarvester</strong>, que extrai o <code class="text-gray-300 font-mono">PATH</code> do seu arquivo <code class="text-gray-300 font-mono">~/.zshrc</code> automaticamente na inicialização. No entanto, o binário do agente precisa estar instalado no seu computador (via <code class="text-gray-300 font-mono">npm</code>, <code class="text-gray-300 font-mono">pip</code> ou <code class="text-gray-300 font-mono">brew</code>).</p>
+                <p>Caso não tenha o Claude Code ou Antigravity instalados, você pode usar livremente a sessão <strong>Standard Shell (/bin/zsh)</strong> para rodar qualquer comando normal de terminal.</p>
+              </div>
+            </details>
+
+            <details class="bg-[#161b22] border border-white/10 rounded-xl p-4 group">
+              <summary class="text-sm font-semibold text-white cursor-pointer list-none flex items-center justify-between">
+                <span>Como conceder permissão de notificações nativas?</span>
+                <span class="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div class="mt-3 text-xs text-gray-400 leading-relaxed border-t border-white/5 pt-3">
+                <p>Na primeira inicialização do <code class="text-white font-mono">SwarmDeck.app</code>, o macOS exibirá uma caixa de diálogo nativa perguntando se você deseja permitir notificações. Clique em <strong>Permitir</strong> para que os alertas de agentes bloqueados funcionem com som e banner.</p>
+              </div>
+            </details>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Section -->
+      <div class="bg-[#161b22] p-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+        <div class="flex items-center gap-2">
+          <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+          <span>SwarmDeck Orchestrator • Protótipo de Engenharia Validado</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="showcase_mapa_funcionalidades.html" class="text-neon-cyan hover:underline">
+            Mapa de Funcionalidades
+          </a>
+          <span>•</span>
+          <a href="https://github.com/RafaelScharf/SwarmDeck" target="_blank" class="hover:text-white transition-colors">
+            GitHub Repository
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Notification Toast para Copiar -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-[#161b22] border border-emerald-500/30 text-white text-xs font-mono px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 transition-all opacity-0 pointer-events-none translate-y-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span id="toastMessage">Comando copiado com sucesso!</span>
+    </div>
+
+  </div>
+
+  <script>
+    // Gerenciador de Abas
+    function switchTab(tabId, buttonElement) {
+      document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.add('hidden');
+        el.classList.remove('block');
+      });
+      
+      const target = document.getElementById(tabId);
+      if (target) {
+        target.classList.remove('hidden');
+        target.classList.add('block');
+      }
+
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('tab-active');
+        btn.classList.add('tab-inactive');
+      });
+
+      buttonElement.classList.remove('tab-inactive');
+      buttonElement.classList.add('tab-active');
+    }
+
+    // Copiar Comando para a Área de Transferência
+    function copyCommand(text, btnElement) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Comando copiado: ' + text);
+        
+        const originalText = btnElement.innerText;
+        btnElement.innerText = 'Copiado! ✓';
+        btnElement.classList.add('text-emerald-400');
+        
+        setTimeout(() => {
+          btnElement.innerText = originalText;
+          btnElement.classList.remove('text-emerald-400');
+        }, 2000);
+      });
+    }
+
+    // Exibir Toast
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.innerText = message;
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
+      }, 2500);
+    }
+
+    // Checklist Dinâmico com LocalStorage
+    function updateChecklist() {
+      const items = document.querySelectorAll('.test-item');
+      let checkedCount = 0;
+      const state = [];
+
+      items.forEach((item, index) => {
+        if (item.checked) checkedCount++;
+        state.push(item.checked);
+      });
+
+      const total = items.length;
+      const percentage = Math.round((checkedCount / total) * 100);
+
+      document.getElementById('progressText').innerText = `${checkedCount} de ${total} (${percentage}%)`;
+      document.getElementById('progressBar').style.width = percentage + '%';
+
+      localStorage.setItem('swarmdeck_test_checklist', JSON.stringify(state));
+    }
+
+    // Restaurar estado salvo do Checklist
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('swarmdeck_test_checklist');
+      if (saved) {
+        try {
+          const state = JSON.parse(saved);
+          const items = document.querySelectorAll('.test-item');
+          items.forEach((item, idx) => {
+            if (state[idx] !== undefined) {
+              item.checked = state[idx];
+            }
+          });
+          updateChecklist();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
