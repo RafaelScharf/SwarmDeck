@@ -54,6 +54,7 @@ Sources/SwarmDeck/
 - [Prototype: macOS Login Shell Environment Harvesting](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-shell-environment-harvesting-resolution.md) ([#10](https://github.com/RafaelScharf/SwarmDeck/issues/10)) — Asynchronous login shell harvesting (`/usr/bin/env -0` with `printenv` fallback) protected by an 800ms timeout watchdog, null-delimited token parsing, in-memory caching, and automatic terminal defaults injection (`TERM=xterm-256color`, `COLORTERM=truecolor`).
 - [Prototype: PTY High-Throughput Backpressure & Stream Coalescing](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-pty-backpressure-resolution.md) ([#11](https://github.com/RafaelScharf/SwarmDeck/issues/11)) — Dedicated `PTYStreamCoalescer` with bounded `AsyncStream` backpressure, 60 FPS adaptive frame batching, bounded 16KB sliding tail buffer in `OutputStateDetector`, and deferred prompt regex analysis upon quiescence.
 - [Prototype: Unix Domain Socket IPC & CLI Dispatcher](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-unix-socket-ipc-resolution.md) ([#12](https://github.com/RafaelScharf/SwarmDeck/issues/12)) — Asynchronous local Unix Domain Socket IPC server (`/tmp/swarmdeck-$UID.sock`) running a newline-delimited JSON-RPC protocol (`spawn`, `list`, `terminate`, `ping`) with CLI client tool (`swarmdeck_cli.swift`) and MainActor synchronization.
+- [Prototype: Terminal Surface Shortcuts, Clipboard & Layout Sync](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/prototype-terminal-surface-sync-resolution.md) ([#8](https://github.com/RafaelScharf/SwarmDeck/issues/8)) — Layout dimension synchronization via Darwin `ioctl(TIOCSWINSZ)` with bounds clamping and deduplication, `suppressesPixelOnlyResizes` preventing sub-cell redraw storms, reactive font scaling (`Cmd++`/`Cmd+-`/`Cmd+0`), curated Ghostty themes (`Dracula`, `Nord`, `Solarized Dark`), clear scrollback (`Cmd+K` via `\u{001B}[3J\u{001B}[H\u{001B}[2J` + `0x0C`), and clipboard integration with `NSPasteboard.general`.
 
 ## Active Tickets
 
@@ -63,7 +64,7 @@ Sources/SwarmDeck/
 - [x] [Prototype: Sidebar & Multi-Session Architecture](https://github.com/RafaelScharf/SwarmDeck/issues/4)
 - [x] [Prototype: Process Lifecycle Supervisor & Configurable Spawning](https://github.com/RafaelScharf/SwarmDeck/issues/5)
 - [x] [Prototype: System Notifications via UNUserNotificationCenter](https://github.com/RafaelScharf/SwarmDeck/issues/6)
-- [ ] [Prototype: Terminal Surface Shortcuts, Clipboard & Layout Sync](https://github.com/RafaelScharf/SwarmDeck/issues/8)
+- [x] [Prototype: Terminal Surface Shortcuts, Clipboard & Layout Sync](https://github.com/RafaelScharf/SwarmDeck/issues/8)
 - [x] [Prototype: macOS Login Shell Environment Harvesting](https://github.com/RafaelScharf/SwarmDeck/issues/10)
 - [x] [Prototype: PTY High-Throughput Backpressure & Stream Coalescing](https://github.com/RafaelScharf/SwarmDeck/issues/11)
 - [x] [Prototype: Unix Domain Socket IPC & CLI Dispatcher](https://github.com/RafaelScharf/SwarmDeck/issues/12)
