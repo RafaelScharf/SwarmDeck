@@ -305,6 +305,11 @@ struct ContentView: View {
                 await sessionManager.addSession(preset: .antigravity, customName: "Agent (Antigravity)")
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .selectSessionNotification)) { notification in
+            if let sessionId = notification.userInfo?["sessionId"] as? UUID {
+                sessionManager.selectedSessionId = sessionId
+            }
+        }
     }
     
     private func colorForState(_ state: AgentState) -> Color {
