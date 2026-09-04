@@ -19,6 +19,7 @@ class Session: Identifiable, Hashable {
     
     private var pty: PTY?
     private var detector = OutputStateDetector()
+    private var coalescer: PTYStreamCoalescer?
     
     init(
         id: UUID = UUID(),
@@ -96,14 +97,20 @@ class Session: Identifiable, Hashable {
                 }
             }
             
-            await pty.setOnData { [weak terminalSession, weak detector] data in
-                terminalSession?.receive(data)
-                Task {
-                    await detector?.feed(data: data)
+            let coalescer = PTYStreamCoalescer(
+                onBatch: { [weak terminalSession, weak detector] batch in
+                    terminalSession?.receive(batch)
+                    await detector?.feed(data: batch)
                 }
+            )
+            self.coalescer = coalescer
+            
+            await pty.setOnData { [weak coalescer] data in
+                coalescer?.yield(data)
             }
             
-            await pty.setOnExit { [weak self] exitCode in
+            await pty.setOnExit { [weak self, weak coalescer] exitCode in
+                coalescer?.finish()
                 Task { @MainActor in
                     guard let self = self else { return }
                     let newState = AgentState.exited(code: exitCode)
@@ -137,6 +144,7 @@ class Session: Identifiable, Hashable {
     }
     
     func terminate() async {
+        coalescer?.cancel()
         await pty?.terminate()
     }
 }
