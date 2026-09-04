@@ -54,6 +54,7 @@ actor PTY {
     private let supervisor: ProcessLifecycleSupervisor
     private var readTask: Task<Void, Never>?
     private let isClosed = OSAllocatedUnfairLock(initialState: false)
+    private let lastWinSize = OSAllocatedUnfairLock<winsize?>(initialState: nil)
     
     var onData: (@Sendable (Data) -> Void)?
     var onExit: (@Sendable (Int32) -> Void)?
@@ -216,12 +217,43 @@ actor PTY {
     nonisolated func resize(columns: Int, rows: Int, widthPixels: Int, heightPixels: Int) {
         let closed = isClosed.withLock { $0 }
         guard !closed, masterFD >= 0 else { return }
+        
+        let cols = UInt16(clamping: max(0, columns))
+        let rws = UInt16(clamping: max(0, rows))
+        let wPx = UInt16(clamping: max(0, widthPixels))
+        let hPx = UInt16(clamping: max(0, heightPixels))
+        
+        let shouldUpdate = lastWinSize.withLock { current -> Bool in
+            if let cur = current,
+               cur.ws_col == cols,
+               cur.ws_row == rws,
+               cur.ws_xpixel == wPx,
+               cur.ws_ypixel == hPx {
+                return false
+            }
+            current = winsize(ws_row: rws, ws_col: cols, ws_xpixel: wPx, ws_ypixel: hPx)
+            return true
+        }
+        
+        guard shouldUpdate else { return }
         var winSize = winsize(
-            ws_row: UInt16(rows),
-            ws_col: UInt16(columns),
-            ws_xpixel: UInt16(widthPixels),
-            ws_ypixel: UInt16(heightPixels)
+            ws_row: rws,
+            ws_col: cols,
+            ws_xpixel: wPx,
+            ws_ypixel: hPx
         )
         _ = ioctl(masterFD, TIOCSWINSZ, &winSize)
+    }
+    
+    nonisolated func getWindowSize() -> winsize? {
+        let closed = isClosed.withLock { $0 }
+        guard !closed, masterFD >= 0 else {
+            return lastWinSize.withLock { $0 }
+        }
+        var ws = winsize()
+        if ioctl(masterFD, TIOCGWINSZ, &ws) == 0 {
+            return ws
+        }
+        return lastWinSize.withLock { $0 }
     }
 }

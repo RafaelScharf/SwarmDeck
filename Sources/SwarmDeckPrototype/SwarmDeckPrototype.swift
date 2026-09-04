@@ -10,6 +10,49 @@ struct SwarmDeckPrototypeApp: App {
         WindowGroup {
             ContentView()
         }
+        .commands {
+            CommandMenu("Terminal") {
+                Button("Clear Scrollback") {
+                    SessionManager.shared.clearScrollbackOnActiveSession()
+                }
+                .keyboardShortcut("k", modifiers: .command)
+                
+                Divider()
+                
+                Button("Bigger") {
+                    SessionManager.shared.increaseFontSizeOnActiveSession()
+                }
+                .keyboardShortcut("+", modifiers: .command)
+                
+                Button("Smaller") {
+                    SessionManager.shared.decreaseFontSizeOnActiveSession()
+                }
+                .keyboardShortcut("-", modifiers: .command)
+                
+                Button("Reset Font Size") {
+                    SessionManager.shared.resetFontSizeOnActiveSession()
+                }
+                .keyboardShortcut("0", modifiers: .command)
+                
+                Divider()
+                
+                Menu("Theme") {
+                    Button("Default (System)") {
+                        SessionManager.shared.setThemeOnActiveSession(named: nil)
+                    }
+                    
+                    Divider()
+                    
+                    ForEach(TerminalThemePreset.allCases) { preset in
+                        if let name = preset.themeName {
+                            Button(preset.rawValue) {
+                                SessionManager.shared.setThemeOnActiveSession(named: name)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -93,6 +136,46 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             }
             await SessionManager.shared.terminateSession(id: targetId)
             return .success(id: request.id, result: "{\"terminated\":true}")
+            
+        case "clear":
+            if let idStr = request.params?["id"], let targetId = UUID(uuidString: idStr) {
+                if let s = SessionManager.shared.sessions.first(where: { $0.id == targetId }) {
+                    s.clearScrollback()
+                }
+            } else {
+                SessionManager.shared.clearScrollbackOnActiveSession()
+            }
+            return .success(id: request.id, result: "{\"cleared\":true}")
+            
+        case "paste":
+            let text = request.params?["text"] ?? ""
+            if let idStr = request.params?["id"], let targetId = UUID(uuidString: idStr) {
+                if let s = SessionManager.shared.sessions.first(where: { $0.id == targetId }) {
+                    s.pasteText(text)
+                }
+            } else {
+                SessionManager.shared.activeSession?.pasteText(text)
+            }
+            return .success(id: request.id, result: "{\"pasted\":true}")
+            
+        case "fontSize":
+            let action = request.params?["action"] ?? "reset"
+            switch action {
+            case "increase": SessionManager.shared.increaseFontSizeOnActiveSession()
+            case "decrease": SessionManager.shared.decreaseFontSizeOnActiveSession()
+            case "set":
+                if let sizeStr = request.params?["size"], let size = Double(sizeStr) {
+                    SessionManager.shared.activeSession?.setFontSize(size)
+                }
+            default: SessionManager.shared.resetFontSizeOnActiveSession()
+            }
+            let current = SessionManager.shared.activeSession?.fontSize ?? Session.defaultFontSize
+            return .success(id: request.id, result: "{\"fontSize\":\(current)}")
+            
+        case "theme":
+            let themeName = request.params?["name"]
+            SessionManager.shared.setThemeOnActiveSession(named: themeName)
+            return .success(id: request.id, result: "{\"theme\":\"\(themeName ?? "default")\"}")
             
         default:
             return .failure(id: request.id, code: -32601, message: "Method not found: \(request.method)")
