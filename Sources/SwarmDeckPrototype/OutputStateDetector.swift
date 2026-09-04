@@ -35,7 +35,7 @@ public actor OutputStateDetector {
         pattern: "\u{001B}(?:[@-Z\\\\-_]|\\[[0-?]*[ -/]*[@-~]|\\][^\\x07]*?(?:\\x07|\u{001B}\\\\))"
     )
     private let blockedRegex = try! NSRegularExpression(
-        pattern: #"(?i)(?:do you want to (?:run|execute|proceed)|allow (?:this |execution)|confirm command|apply (?:these )?changes|proceed\?|\(y\/n\)|\(y\)es\/\(n\)o|\[y\/n\]|\[y\/N\]|\[Y\/n\]|^\s*❯\s*(?:\d+\.\s*)?Yes)"#
+        pattern: #"(?im)(?:do you want to (?:run|execute|proceed)|allow (?:this |execution)|confirm command|apply (?:these )?changes|proceed\?|\(y\/n\)|\(y\)es\/\(n\)o|\[y\/n\]|\[y\/N\]|\[Y\/n\]|^\s*❯\s*(?:\d+\.\s*)?Yes)"#
     )
     private let idlePromptRegex = try! NSRegularExpression(
         pattern: #"(?m)(?:^|[\r\n])\s*(?:❯|›|>|\$|➜|%)\s*$"#
@@ -47,7 +47,14 @@ public actor OutputStateDetector {
     public init() {}
     
     public func feed(data: Data) {
-        if let stringChunk = String(data: data, encoding: .utf8) {
+        buffer.append(data)
+        if buffer.count > 16384 {
+            buffer = buffer.suffix(16384)
+        }
+        
+        // Check tail segment of incoming chunk for OSC 133 semantic prompt markers or bell
+        let tailData = data.count > 4096 ? data.suffix(4096) : data
+        if let stringChunk = String(data: tailData, encoding: .utf8) {
             if stringChunk.contains("\u{001B}]133;B\u{0007}") || stringChunk.contains("\u{001B}]133;B\u{001B}\\") {
                 transition(to: .idle)
                 return
@@ -55,11 +62,6 @@ public actor OutputStateDetector {
             if stringChunk.contains("\u{0007}") {
                 transition(to: .blocked(reason: "Terminal Bell Alert"))
             }
-        }
-        
-        buffer.append(data)
-        if buffer.count > 8192 {
-            buffer = buffer.suffix(8192)
         }
         
         if currentState != .working, case .blocked = currentState {
