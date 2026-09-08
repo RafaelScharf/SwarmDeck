@@ -1,6 +1,6 @@
 # SwarmDeck Makefile
 
-.PHONY: all build release app dmg zip test clean run
+.PHONY: all build release app dmg zip test clean run benchmark-latency
 
 all: app
 
@@ -32,3 +32,7 @@ test:
 clean:
 	swift package clean
 	rm -rf build/
+
+benchmark-latency:
+	swift run LatencyPacingBenchmark
+
