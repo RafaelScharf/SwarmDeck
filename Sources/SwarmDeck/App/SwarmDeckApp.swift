@@ -28,6 +28,32 @@ struct SwarmDeckApp: App {
                 .keyboardShortcut("w", modifiers: .command)
             }
             
+            CommandGroup(replacing: .pasteboard) {
+                Button("Cut") {
+                    NSApp.sendAction(#selector(NSText.cut(_:)), to: nil, from: nil)
+                }
+                .keyboardShortcut("x", modifiers: .command)
+                
+                Button("Copy") {
+                    if !NSApp.sendAction(#selector(NSText.copy(_:)), to: nil, from: nil) {
+                        SessionStore.shared.activeSession?.copySelectionOrViewport()
+                    }
+                }
+                .keyboardShortcut("c", modifiers: .command)
+                
+                Button("Paste") {
+                    if !NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: nil) {
+                        SessionStore.shared.pasteOnActiveSession()
+                    }
+                }
+                .keyboardShortcut("v", modifiers: .command)
+                
+                Button("Select All") {
+                    _ = NSApp.sendAction(#selector(NSText.selectAll(_:)), to: nil, from: nil)
+                }
+                .keyboardShortcut("a", modifiers: .command)
+            }
+            
             CommandMenu("Navigate") {
                 ForEach(1...9, id: \.self) { num in
                     Button("Session \(num)") {
