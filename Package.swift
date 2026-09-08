@@ -30,5 +30,23 @@ let package = Package(
             ],
             path: "Sources/SwarmDeckPrototype"
         ),
+        .testTarget(
+            name: "SwarmDeckTests",
+            dependencies: ["SwarmDeck"],
+            path: "Tests/SwarmDeckTests",
+            swiftSettings: [
+                .unsafeFlags([
+                    "-F/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+                    "-I/Library/Developer/CommandLineTools/Library/Developer/Frameworks"
+                ])
+            ],
+            linkerSettings: [
+                .unsafeFlags([
+                    "-F/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+                    "-Xlinker", "-rpath", "-Xlinker", "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+                    "-framework", "Testing"
+                ])
+            ]
+        ),
     ]
 )

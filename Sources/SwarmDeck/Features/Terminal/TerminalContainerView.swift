@@ -200,12 +200,12 @@ public struct TerminalContainerView: View {
         case .idle:
             Text("Idle").font(.caption).foregroundColor(.secondary)
         case .blocked(let reason):
-            Text("Blocked: \(reason)").font(.caption).foregroundColor(.red)
+            Text("Blocked: \(reason.description)").font(.caption).foregroundColor(.red)
         case .exited(let code):
             HStack(spacing: 6) {
-                Text("Exited (\(code))")
+                Text("Exited (\(code.rawValue))")
                     .font(.caption)
-                    .foregroundColor(code == 0 ? .secondary : .red)
+                    .foregroundColor(code.isSuccess ? .secondary : .red)
             }
         }
     }

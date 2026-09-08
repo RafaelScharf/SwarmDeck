@@ -94,7 +94,7 @@ public actor NotificationService {
             }
             
         case .exited(let code):
-            if code != 0 {
+            if !code.isSuccess {
                 shouldNotify = true
                 title = "\(sessionName) Exited with Error"
                 body = "Process terminated unexpectedly with exit code \(code)."
