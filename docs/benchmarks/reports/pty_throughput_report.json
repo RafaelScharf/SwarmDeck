@@ -1,0 +1,96 @@
+{
+  "coalescerResult" : {
+    "averageBatchBytes" : 64000,
+    "coalescingReductionPercent" : 99.8,
+    "dropRatePercent" : 0,
+    "droppedBytes" : 0,
+    "passed" : true,
+    "totalBatchesEmitted" : 8,
+    "totalBytesEmitted" : 512000,
+    "totalBytesInput" : 512000,
+    "totalChunksInput" : 4000
+  },
+  "environment" : {
+    "activeCPUs" : 8,
+    "architecture" : "Apple Silicon (arm64)",
+    "osVersion" : "macOS 15.7.4",
+    "physicalMemoryGB" : 8,
+    "timestamp" : "2026-09-08T20:20:48Z"
+  },
+  "overallPassed" : true,
+  "promptDetectionResult" : {
+    "falsePositives" : 0,
+    "p50LatencyMs" : 0.187875,
+    "p95LatencyMs" : 0.749833,
+    "p99LatencyMs" : 0.749833,
+    "passed" : true,
+    "scenarios" : [
+      {
+        "latencyMs" : 0.019208,
+        "passed" : true,
+        "scenarioName" : "OSC 133;B Semantic Prompt Marker",
+        "stateDetected" : "idle",
+        "targetLatencyMs" : 0.5
+      },
+      {
+        "latencyMs" : 0.05175,
+        "passed" : true,
+        "scenarioName" : "Terminal Bell Alert (\\x07)",
+        "stateDetected" : "blocked(reason: \"Terminal Bell Alert\")",
+        "targetLatencyMs" : 0.5
+      },
+      {
+        "latencyMs" : 0.749833,
+        "passed" : true,
+        "scenarioName" : "Blocked Confirmation Prompt (y\/n)",
+        "stateDetected" : "blocked",
+        "targetLatencyMs" : 3
+      },
+      {
+        "latencyMs" : 0.187875,
+        "passed" : true,
+        "scenarioName" : "Shell Interactive Prompt (❯)",
+        "stateDetected" : "idle",
+        "targetLatencyMs" : 3
+      }
+    ]
+  },
+  "rawIngestionResults" : [
+    {
+      "elapsedSeconds" : 0.029976875,
+      "memoryDeltaMB" : 0,
+      "passed" : true,
+      "targetThroughputMBs" : 65,
+      "throughputMBs" : 333.5904759919104,
+      "totalBytes" : 10485760,
+      "workload" : "Dense UTF-8 Text (Cat\/Logs)"
+    },
+    {
+      "elapsedSeconds" : 0.032744708,
+      "memoryDeltaMB" : 0,
+      "passed" : true,
+      "targetThroughputMBs" : 65,
+      "throughputMBs" : 305.39285920644033,
+      "totalBytes" : 10485760,
+      "workload" : "24-bit TrueColor Matrix"
+    },
+    {
+      "elapsedSeconds" : 0.040181834,
+      "memoryDeltaMB" : 0.21875,
+      "passed" : true,
+      "targetThroughputMBs" : 65,
+      "throughputMBs" : 248.86868030961455,
+      "totalBytes" : 10485760,
+      "workload" : "Cursor Repositioning & Selective Erasure"
+    },
+    {
+      "elapsedSeconds" : 0.024564709,
+      "memoryDeltaMB" : 0,
+      "passed" : true,
+      "targetThroughputMBs" : 65,
+      "throughputMBs" : 407.0880709394929,
+      "totalBytes" : 10485760,
+      "workload" : "Syntax Diffs (Git\/Patch)"
+    }
+  ]
+}
