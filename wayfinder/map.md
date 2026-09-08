@@ -30,8 +30,10 @@ Sources/SwarmDeck/
 │   │   └── ProcessSupervisor.swift     // DispatchSourceProcess, automatic waitpid zombie reaping, SIGTERM/SIGKILL
 │   ├── Detection/
 │   │   └── AgentStateDetector.swift    // VT100/ANSI stream parser, 250ms debounce, regex prompt heuristics
-│   └── Notification/
-│       └── NotificationService.swift   // UNUserNotificationCenter, debounce rate-limiting, deep-link payload
+│   ├── Notification/
+│   │   └── NotificationService.swift   // UNUserNotificationCenter, debounce rate-limiting, deep-link payload
+│   └── Persistence/
+│       └── WorkspacePersistenceService.swift // Atomic JSON workspace topology, 500ms debounce, crash recovery
 └── Features/                           // Presentation layer (SwiftUI + @Observable)
     ├── SessionStore.swift              // Central @Observable state orchestrator
     ├── Sidebar/
@@ -58,6 +60,7 @@ Sources/SwarmDeck/
 - [Task: Session Multiplexer Sidebar & Navigation UX](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/task-session-multiplexer-sidebar-resolution.md) ([#7](https://github.com/RafaelScharf/SwarmDeck/issues/7)) — Production Clean Architecture MVP layout (`Sources/SwarmDeck/`) with polished `AgentRowView` (animated spinner for `.working`, red badge with tooltip for `.blocked`, preset icons, `⌘1`..`⌘9` hints), `NewSessionSheet` modal with `NSOpenPanel` directory picker, keyboard navigation (`Cmd+1`..`Cmd+9`, `Cmd+W` close with working confirmation guard, `Cmd+N`/`Cmd+T`), session renaming, and process restarting.
 - [Task: macOS App Packaging, Entitlements & Release Setup](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/task-macos-packaging-release-resolution.md) ([#9](https://github.com/RafaelScharf/SwarmDeck/issues/9)) — Production app packaging pipeline (`scripts/package_app.sh`), Apple `Info.plist` (bundle ID `com.rafaelscharf.SwarmDeck`, macOS 14.0+, Retina, alert notifications), hardened runtime entitlements with App Sandbox disabled for unrestricted CLI agent process spawning, vector AppIcon rendering (`scripts/generate_icon.swift`), code signing, and distributable ZIP/DMG generation.
 - [Task: Domain Core Refactoring & Strict Swift 6 Concurrency Model](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/task-domain-core-refactoring-resolution.md) ([#38](https://github.com/RafaelScharf/SwarmDeck/issues/38)) — Refactored `Sources/SwarmDeck/Domain/` (`AgentState`, `AgentPreset`, `Session`) into 100% `@Sendable` pure value models with formalized state machine transition invariants (terminal `.exited` state), strongly-typed `BlockedReason` and `ProcessExitCode`, complete decoupling from AppKit/SwiftUI/POSIX, JSON `Codable` support, and 26-test Swift Testing suite.
+- [Task: Declarative Workspace Topology & Crash-Resilient Persistence](file:///Users/rafaelkscharf/Projects/homelab/SwarmDeck/wayfinder/tickets/task-declarative-workspace-persistence-resolution.md) ([#41](https://github.com/RafaelScharf/SwarmDeck/issues/41)) — Implemented `WorkspacePersistenceService` actor with atomic POSIX rename writes (`workspace.json.tmp` -> `workspace.json`), 500ms debounce coalescing, corrupted JSON quarantine recovery, `WorkspaceTopology` schema, auto-restart safety policy, and `SessionStore` lifecycle synchronization.
 
 ## Active Tickets
 
@@ -91,7 +94,7 @@ Sources/SwarmDeck/
 - [x] [Task: Domain Core Refactoring & Strict Swift 6 Concurrency Model](https://github.com/RafaelScharf/SwarmDeck/issues/38)
 - [ ] [Task: Zero-Copy PTY Stream Ingestion & Low-Latency State Detector](https://github.com/RafaelScharf/SwarmDeck/issues/39) *(Blocked by #34, #35)*
 - [ ] [Task: Metal-Accelerated Terminal Surface View & 120 FPS ProMotion Sync](https://github.com/RafaelScharf/SwarmDeck/issues/40) *(Blocked by #37, #38)*
-- [ ] [Task: Declarative Workspace Topology & Crash-Resilient Persistence](https://github.com/RafaelScharf/SwarmDeck/issues/41) *(Blocked by #38)*
+- [x] [Task: Declarative Workspace Topology & Crash-Resilient Persistence](https://github.com/RafaelScharf/SwarmDeck/issues/41) *(Blocked by #38)*
 - [ ] [Task: Automated Test Suite & Benchmark Integration Pipeline](https://github.com/RafaelScharf/SwarmDeck/issues/42) *(Blocked by #35, #36, #37, #39, #40, #41)*
 
 ## Not yet specified

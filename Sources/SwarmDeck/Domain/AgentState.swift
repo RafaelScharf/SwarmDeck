@@ -30,11 +30,15 @@ public struct BlockedReason: Sendable, Equatable, Hashable, Codable, CustomStrin
 }
 
 /// Representation of a process termination exit status code.
-public struct ProcessExitCode: Sendable, Equatable, Hashable, Codable, CustomStringConvertible {
+public struct ProcessExitCode: Sendable, Equatable, Hashable, Codable, CustomStringConvertible, ExpressibleByIntegerLiteral {
     public let rawValue: Int32
     
     public init(_ rawValue: Int32) {
         self.rawValue = rawValue
+    }
+    
+    public init(integerLiteral value: Int32) {
+        self.rawValue = value
     }
     
     public var description: String { "\(rawValue)" }
@@ -89,10 +93,6 @@ public enum AgentState: Sendable, Equatable, Hashable, Codable {
     
     public static func blocked(reason: String) -> AgentState {
         .blocked(reason: BlockedReason(reason))
-    }
-    
-    public static func exited(code: Int32) -> AgentState {
-        .exited(code: ProcessExitCode(code))
     }
     
     // MARK: - State Inspection Properties
