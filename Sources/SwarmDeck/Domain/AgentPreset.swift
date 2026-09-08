@@ -1,7 +1,9 @@
 import Foundation
 
 /// Defines a pre-configured or custom agent environment and execution parameters.
-public struct AgentPreset: Identifiable, Sendable, Hashable {
+///
+/// Fully decoupled from AppKit, SwiftUI, and low-level POSIX headers.
+public struct AgentPreset: Identifiable, Sendable, Hashable, Equatable, Codable {
     public let id: String
     public let name: String
     public let description: String
@@ -29,6 +31,11 @@ public struct AgentPreset: Identifiable, Sendable, Hashable {
         self.workingDirectory = workingDirectory
         self.environment = environment
         self.iconName = iconName
+    }
+    
+    /// Validates whether the preset contains a valid executable command.
+    public var isValid: Bool {
+        !command.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     
     // MARK: - Standard Presets

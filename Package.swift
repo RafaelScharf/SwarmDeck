@@ -30,5 +30,10 @@ let package = Package(
             ],
             path: "Sources/SwarmDeckPrototype"
         ),
+        .testTarget(
+            name: "SwarmDeckTests",
+            dependencies: ["SwarmDeck"],
+            path: "Tests/SwarmDeckTests"
+        ),
     ]
 )

@@ -141,10 +141,10 @@ public struct AgentRowView: View {
                     .foregroundColor(.secondary)
             }
         case .blocked(let reason):
-            Text(reason)
+            Text(reason.description)
                 .font(.caption2)
                 .foregroundColor(.red)
-                .help("Waiting for confirmation: \(reason)")
+                .help("Waiting for confirmation: \(reason.description)")
         case .exited(let code):
             Text("Exited (\(code))")
                 .font(.caption2)
