@@ -33,7 +33,13 @@ let package = Package(
         .testTarget(
             name: "SwarmDeckTests",
             dependencies: ["SwarmDeck"],
-            path: "Tests/SwarmDeckTests"
+            path: "Tests/SwarmDeckTests",
+            swiftSettings: [
+                .unsafeFlags([
+                    "-F", "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+                    "-I", "/Library/Developer/CommandLineTools/Library/Developer/Frameworks"
+                ])
+            ]
         ),
     ]
 )
