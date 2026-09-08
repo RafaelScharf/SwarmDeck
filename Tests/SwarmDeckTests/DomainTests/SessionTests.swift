@@ -1,5 +1,4 @@
 import Testing
-import Foundation
 @testable import SwarmDeck
 
 @Suite("Session & SessionMetadata Domain Model Tests")

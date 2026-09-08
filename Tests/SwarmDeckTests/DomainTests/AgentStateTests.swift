@@ -1,5 +1,4 @@
 import Testing
-import Foundation
 @testable import SwarmDeck
 
 @Suite("AgentState Domain Model Tests")

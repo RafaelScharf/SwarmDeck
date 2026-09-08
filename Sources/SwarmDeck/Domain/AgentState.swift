@@ -1,4 +1,4 @@
-import Foundation
+@_exported import Foundation
 
 /// Structured reason describing why an agent is in the `.blocked` state.
 public struct BlockedReason: Sendable, Equatable, Hashable, Codable, CustomStringConvertible, ExpressibleByStringLiteral {
