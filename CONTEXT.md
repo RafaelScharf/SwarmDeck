@@ -22,5 +22,10 @@ While Rust + Tauri with `xterm.js` is great, it relies on a web view. The DOM/Ca
 
 ## Development Strategy (Matt Pocock Flow)
 1. **Wayfinder:** Establish project boundaries, core data models (Session, PTY, Status).
-2. **Grilling & Prototypes (Completed):** Resolved technical questions and validated core assumptions through throwaway spikes (PTY `forkpty` allocation, multi-tier state detection, observation multi-session UI). Archived in `temp/prototypes/` (Issues #2, #3, #4).
-3. **Implementation Frontier:** Executing modular implementation tasks charted in `wayfinder/map.md` (Process supervisor, notifications, sidebar UX, terminal polish, app release).
+2. **Phase 1: Technical Prototype Spikes (Completed):** Resolved technical questions and validated core assumptions through throwaway spikes (PTY `forkpty` allocation, multi-tier state detection, observation multi-session UI, login shell harvesting, backpressure coalescing, socket IPC). Archived in `temp/prototypes/` (Issues #2, #3, #4, #5, #6, #8, #10, #11, #12).
+3. **Phase 2: Clean Architecture MVP & Packaging (Completed):** Integrated baseline production structure in `Sources/SwarmDeck/`, sidebar navigation UX, and macOS app packaging pipeline (Issues #7, #9).
+4. **Phase 3: Benchmarks Suite & Production Architecture Implementation (Active Frontier):** Executing reproducible benchmarks and production-hardened components (Issues #33 to #42):
+   - **Research & Baselines:** Competitor empirical data (Ghostty, Alacritty, iTerm2, Superset/Electron) and semantic shell protocols (OSC 133/633).
+   - **Benchmark Harnesses:** PTY throughput/cycle acceleration (> 65 MB/s), dirty memory footprint scaling (< 60 MB idle, < 6 MB/session up to 20 agents), and frame pacing / typing latency (< 15 ms, 120 FPS ProMotion).
+   - **Production Architecture:** Swift 6 Sendable domain core, zero-copy byte stream ingestion with sub-3ms prompt detection, Metal surface integration, and declarative workspace persistence.
+

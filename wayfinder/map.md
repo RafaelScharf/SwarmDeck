@@ -75,9 +75,26 @@ Sources/SwarmDeck/
 - [x] [Task: Session Multiplexer Sidebar & Navigation UX](https://github.com/RafaelScharf/SwarmDeck/issues/7)
 - [x] [Task: macOS App Packaging, Entitlements & Release Setup](https://github.com/RafaelScharf/SwarmDeck/issues/9)
 
+### Phase 3: Benchmarks Suite & Production Architecture Implementation (Active Frontier)
+
+#### 1. Research & Benchmarking Baselines
+- [ ] [Research: Competitor Benchmarks Baseline & Test Methodology](https://github.com/RafaelScharf/SwarmDeck/issues/33)
+- [ ] [Research: OSC 133 / OSC 633 Semantic Shell Protocols & Zero-Copy State Detection](https://github.com/RafaelScharf/SwarmDeck/issues/34)
+
+#### 2. Performance & Scalability Benchmark Harnesses
+- [ ] [Benchmark: PTY Throughput & Cycle Acceleration Harness](https://github.com/RafaelScharf/SwarmDeck/issues/35) *(Blocked by #33)*
+- [ ] [Benchmark: Memory Footprint & Multi-Session Scalability Harness](https://github.com/RafaelScharf/SwarmDeck/issues/36) *(Blocked by #33)*
+- [ ] [Benchmark: Latency & Metal Frame Pacing Harness](https://github.com/RafaelScharf/SwarmDeck/issues/37) *(Blocked by #33)*
+
+#### 3. Real App Production Architecture & Hardening
+- [ ] [Task: Domain Core Refactoring & Strict Swift 6 Concurrency Model](https://github.com/RafaelScharf/SwarmDeck/issues/38)
+- [ ] [Task: Zero-Copy PTY Stream Ingestion & Low-Latency State Detector](https://github.com/RafaelScharf/SwarmDeck/issues/39) *(Blocked by #34, #35, #38)*
+- [ ] [Task: Metal-Accelerated Terminal Surface View & 120 FPS ProMotion Sync](https://github.com/RafaelScharf/SwarmDeck/issues/40) *(Blocked by #37, #38)*
+- [ ] [Task: Declarative Workspace Topology & Crash-Resilient Persistence](https://github.com/RafaelScharf/SwarmDeck/issues/41) *(Blocked by #38)*
+- [ ] [Task: Automated Test Suite & Benchmark Integration Pipeline](https://github.com/RafaelScharf/SwarmDeck/issues/42) *(Blocked by #35, #36, #37, #39, #40, #41)*
+
 ## Not yet specified
 
-- **Session State Persistence Strategy:** Declarative workspace topology and buffer snapshot (`~/.config/swarmdeck/workspace.json`) adopted for Phase 2; out-of-process `tmux`-style daemon formally rejected for MVP.
 - **Custom Agent Detection Rules:** User-configurable regex patterns and triggers per CLI tool via JSON configuration files.
 
 ## Out of scope
@@ -85,3 +102,4 @@ Sources/SwarmDeck/
 - Web-based wrappers or Electron implementations.
 - Supporting non-macOS platforms (Windows/Linux) for this initial iteration (focus is on native macOS).
 - Writing custom terminal emulators from scratch (must use libghostty).
+
