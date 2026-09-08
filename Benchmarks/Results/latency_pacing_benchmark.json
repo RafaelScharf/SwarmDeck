@@ -1,0 +1,62 @@
+{
+  "benchmarkId" : "SWARM-BENCH-LATENCY-PACING",
+  "environment" : {
+    "displayRefreshRateHz" : 120,
+    "hostArchitecture" : "arm64 (Apple Silicon)",
+    "metalDeviceName" : "Apple Silicon Metal GPU",
+    "osVersion" : "Version 15.7.4 (Build 24G517)",
+    "physicalMemoryBytes" : 8589934592,
+    "processorCount" : 8
+  },
+  "framePacing" : {
+    "averageFPS" : 120.00007462189522,
+    "droppedFrameRatePerSec" : 0,
+    "droppedFrames" : 0,
+    "droppedThresholdMs" : 10.416666666666668,
+    "durationSeconds" : 4.958330249999997,
+    "hardJitterLimitMs" : 1.5,
+    "hardLimitPassed" : true,
+    "jitterMs" : 0.006556640384891006,
+    "maxFrameDeltaMs" : 8.361458333333333,
+    "meanFrameDeltaMs" : 8.333328151260499,
+    "minFrameDeltaMs" : 8.30325,
+    "targetFPS" : 120,
+    "targetFrameTimeMs" : 8.333333333333334,
+    "targetJitterLimitMs" : 0.5,
+    "targetPassed" : true,
+    "totalFramesMeasured" : 595,
+    "visualTearingDetected" : false
+  },
+  "idleLatency" : {
+    "hardLimitMs" : 25,
+    "hardLimitPassed" : true,
+    "maxMs" : 0.7430833333333333,
+    "meanMs" : 0.07157652777777779,
+    "medianMs" : 0.05358333333333333,
+    "minMs" : 0.024833333333333332,
+    "p95Ms" : 0.17276041666666667,
+    "p99Ms" : 0.2753916666666665,
+    "phase" : "Idle Latency (0 Background Sessions)",
+    "sampleCount" : 300,
+    "standardDeviationMs" : 0.062000386656718205,
+    "targetLimitMs" : 12,
+    "targetPassed" : true
+  },
+  "loadedLatency" : {
+    "hardLimitMs" : 25,
+    "hardLimitPassed" : true,
+    "maxMs" : 0.6824583333333334,
+    "meanMs" : 0.14937791666666664,
+    "medianMs" : 0.14033333333333334,
+    "minMs" : 0.05383333333333334,
+    "p95Ms" : 0.22489166666666693,
+    "p99Ms" : 0.33781124999999806,
+    "phase" : "Loaded Latency (4 Background Streams)",
+    "sampleCount" : 300,
+    "standardDeviationMs" : 0.06397469169785538,
+    "targetLimitMs" : 15,
+    "targetPassed" : true
+  },
+  "overallPassed" : true,
+  "timestamp" : "2026-09-08T20:16:35Z"
+}

@@ -30,5 +30,10 @@ let package = Package(
             ],
             path: "Sources/SwarmDeckPrototype"
         ),
+        .executableTarget(
+            name: "LatencyPacingBenchmark",
+            dependencies: [],
+            path: "Benchmarks/LatencyPacing"
+        ),
     ]
 )
