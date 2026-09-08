@@ -46,9 +46,12 @@ public struct MainView: View {
         }
         .task {
             if store.sessions.isEmpty {
-                await store.addSession(preset: .standardShell, customName: "Shell (Zsh)")
-                await store.addSession(preset: .claudeCode, customName: "Agent (Claude)")
-                await store.addSession(preset: .antigravity, customName: "Agent (Antigravity)")
+                let (restoredCount, _) = await store.restoreWorkspace()
+                if restoredCount == 0 && store.sessions.isEmpty {
+                    await store.addSession(preset: .standardShell, customName: "Shell (Zsh)")
+                    await store.addSession(preset: .claudeCode, customName: "Agent (Claude)")
+                    await store.addSession(preset: .antigravity, customName: "Agent (Antigravity)")
+                }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .selectSessionNotification)) { notification in

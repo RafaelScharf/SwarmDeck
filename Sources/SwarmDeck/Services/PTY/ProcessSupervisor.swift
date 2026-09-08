@@ -63,7 +63,7 @@ public final class ProcessSupervisor: @unchecked Sendable {
     }
     
     public static func decodeExitStatus(_ status: Int32) -> Int32 {
-        if (status & 0x7F) == 0 {
+        if (status & 0x7F) == Int32(0) {
             return (status >> 8) & 0xFF
         }
         if ((status & 0x7F) + 1) >> 1 > 0 {

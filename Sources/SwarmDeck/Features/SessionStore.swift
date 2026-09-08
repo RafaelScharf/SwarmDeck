@@ -116,6 +116,22 @@ public final class AgentSession: Identifiable, Hashable {
         hasher.combine(id)
     }
     
+    /// Converts the runtime AgentSession into an immutable Sendable Domain Session.
+    public func toSession() -> Session {
+        Session(
+            id: id,
+            name: name,
+            preset: preset,
+            workingDirectory: workingDirectory,
+            customEnvironment: customEnvironment,
+            state: state,
+            processId: pid,
+            exitCode: exitCode.map { ProcessExitCode($0) },
+            createdAt: createdAt,
+            updatedAt: Date()
+        )
+    }
+    
     public func start() async {
         do {
             let config = PTYConfiguration(
@@ -197,7 +213,7 @@ public final class AgentSession: Identifiable, Hashable {
                 coalescer?.finish()
                 Task { @MainActor in
                     guard let self = self else { return }
-                    let newState = AgentState.exited(code: exitCode)
+                    let newState = AgentState.exited(code: ProcessExitCode(exitCode))
                     self.state = newState
                     self.exitCode = exitCode
                     let isAppActive = NSApplication.shared.isActive
@@ -220,7 +236,7 @@ public final class AgentSession: Identifiable, Hashable {
             
         } catch {
             print("Failed to initialize session \(name): \(error.localizedDescription)")
-            self.state = .exited(code: -1)
+            self.state = .exited(code: ProcessExitCode(-1))
         }
     }
     
@@ -360,12 +376,98 @@ public final class SessionStore {
     // Sheet creation state
     public var showingNewSessionSheet: Bool = false
     
+    // Persistence & Crash Recovery
+    public var persistenceService: WorkspacePersistenceService = .shared
+    public var autoRestartPolicy: AutoRestartPolicy = .safePresetsOnly
+    
     public var activeSession: AgentSession? {
         guard let id = selectedSessionId else { return sessions.first }
         return sessions.first(where: { $0.id == id })
     }
     
     public init() {}
+    
+    // MARK: - Workspace Topology & Persistence
+    
+    /// Generates an immutable snapshot of the current workspace topology.
+    public func currentTopology(cleanShutdown: Bool = false) -> WorkspaceTopology {
+        WorkspaceTopology(
+            version: 1,
+            sessions: sessions.map { $0.toSession() },
+            selectedSessionId: selectedSessionId,
+            lastSavedAt: Date(),
+            cleanShutdown: cleanShutdown
+        )
+    }
+    
+    /// Schedules a debounced write of the current workspace topology.
+    public func persistWorkspace() {
+        let topology = currentTopology(cleanShutdown: false)
+        Task {
+            await persistenceService.scheduleSave(topology: topology)
+        }
+    }
+    
+    /// Restores workspace topology from disk with automated crash recovery.
+    @discardableResult
+    public func restoreWorkspace(policy: AutoRestartPolicy? = nil) async -> (restoredCount: Int, wasCorrupted: Bool) {
+        let restartPolicy = policy ?? self.autoRestartPolicy
+        let (topology, wasCorrupted) = await persistenceService.loadWithRecovery()
+        
+        guard !topology.sessions.isEmpty else {
+            return (0, wasCorrupted)
+        }
+        
+        for session in topology.sessions {
+            let shouldAutoStart: Bool
+            switch restartPolicy {
+            case .disabled:
+                shouldAutoStart = false
+            case .safePresetsOnly:
+                shouldAutoStart = session.preset.isSafeForAutoRestart
+            case .allPresets:
+                shouldAutoStart = true
+            }
+            
+            let agentSession = AgentSession(
+                id: session.id,
+                name: session.name,
+                preset: session.preset,
+                workingDirectory: session.workingDirectory,
+                customEnvironment: session.customEnvironment,
+                createdAt: session.createdAt
+            )
+            agentSession.store = self
+            sessions.append(agentSession)
+            
+            if shouldAutoStart {
+                await agentSession.start()
+            } else {
+                agentSession.state = .idle
+            }
+        }
+        
+        if let selectedId = topology.selectedSessionId, sessions.contains(where: { $0.id == selectedId }) {
+            selectedSessionId = selectedId
+        } else {
+            selectedSessionId = sessions.first?.id
+        }
+        
+        return (topology.sessions.count, wasCorrupted)
+    }
+    
+    /// Performs an orderly clean shutdown: terminates child processes and writes clean shutdown flag.
+    public func shutdown() async {
+        for session in sessions {
+            await session.terminate()
+        }
+        let topology = currentTopology(cleanShutdown: true)
+        do {
+            try await persistenceService.recordCleanShutdown(topology: topology)
+        } catch {
+            print("SessionStore clean shutdown persistence error: \(error)")
+        }
+    }
     
     @discardableResult
     public func addSession(
@@ -388,6 +490,7 @@ public final class SessionStore {
         await session.start()
         
         selectedSessionId = session.id
+        persistWorkspace()
         return session.id
     }
     
@@ -400,11 +503,13 @@ public final class SessionStore {
         if selectedSessionId == id {
             selectedSessionId = sessions.first?.id
         }
+        persistWorkspace()
     }
     
     public func terminateSession(id: UUID) async {
         guard let session = sessions.first(where: { $0.id == id }) else { return }
         await session.terminate()
+        persistWorkspace()
     }
     
     public func restartSession(id: UUID) async {
@@ -422,6 +527,7 @@ public final class SessionStore {
         newSession.store = self
         sessions[index] = newSession
         await newSession.start()
+        persistWorkspace()
     }
     
     public func renameSession(id: UUID, newName: String) {
@@ -429,6 +535,7 @@ public final class SessionStore {
         guard !trimmed.isEmpty else { return }
         guard let session = sessions.first(where: { $0.id == id }) else { return }
         session.name = trimmed
+        persistWorkspace()
     }
     
     // MARK: - Keyboard Navigation (Cmd+1..Cmd+9, Cmd+W)
@@ -436,6 +543,7 @@ public final class SessionStore {
     public func selectSession(at index: Int) {
         guard index >= 0 && index < sessions.count else { return }
         selectedSessionId = sessions[index].id
+        persistWorkspace()
     }
     
     public func requestCloseActiveSession() {

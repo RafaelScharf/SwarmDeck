@@ -158,4 +158,13 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificat
     ) {
         completionHandler([.banner, .sound, .badge])
     }
+    
+    public func applicationWillTerminate(_ notification: Notification) {
+        let semaphore = DispatchSemaphore(value: 0)
+        Task { @MainActor in
+            await SessionStore.shared.shutdown()
+            semaphore.signal()
+        }
+        _ = semaphore.wait(timeout: .now() + 2.0)
+    }
 }
