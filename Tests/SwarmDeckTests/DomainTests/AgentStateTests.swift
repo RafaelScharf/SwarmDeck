@@ -43,9 +43,9 @@ struct AgentStateTests {
     
     // MARK: - ProcessExitCode Tests
     
-    @Test("ProcessExitCode basics and integer literals")
+    @Test("ProcessExitCode basics and predicates")
     func testProcessExitCodeBasics() {
-        let codeSuccess: ProcessExitCode = 0
+        let codeSuccess = ProcessExitCode(0)
         #expect(codeSuccess.rawValue == 0)
         #expect(codeSuccess.isSuccess)
         #expect(!codeSuccess.isSignalTerminated)
@@ -67,13 +67,15 @@ struct AgentStateTests {
         #expect(ProcessExitCode.sigterm.rawValue == 143)
     }
     
-    @Test("ProcessExitCode Int32 equality operators")
-    func testProcessExitCodeInt32Equality() {
-        let code = ProcessExitCode(42)
-        #expect(code == 42)
-        #expect(42 == code)
-        #expect(code != 0)
-        #expect(0 != code)
+    @Test("ProcessExitCode Equatable and Hashable")
+    func testProcessExitCodeEquatable() {
+        let codeA = ProcessExitCode(42)
+        let codeB = ProcessExitCode(42)
+        let codeC = ProcessExitCode(0)
+        #expect(codeA == codeB)
+        #expect(codeA != codeC)
+        #expect(codeA.rawValue == 42)
+        #expect(codeC.isSuccess)
     }
     
     @Test("ProcessExitCode Codable")

@@ -146,9 +146,9 @@ public struct AgentRowView: View {
                 .foregroundColor(.red)
                 .help("Waiting for confirmation: \(reason.description)")
         case .exited(let code):
-            Text("Exited (\(code))")
+            Text("Exited (\(code.rawValue))")
                 .font(.caption2)
-                .foregroundColor(code == 0 ? .secondary : .red)
+                .foregroundColor(code.isSuccess ? .secondary : .red)
         }
     }
     
@@ -157,7 +157,7 @@ public struct AgentRowView: View {
         case .idle: return .gray
         case .working: return .green
         case .blocked: return .red
-        case .exited(let code): return code == 0 ? .secondary : .orange
+        case .exited(let code): return code.isSuccess ? .secondary : .orange
         }
     }
 }

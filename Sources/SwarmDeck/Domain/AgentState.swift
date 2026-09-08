@@ -30,15 +30,11 @@ public struct BlockedReason: Sendable, Equatable, Hashable, Codable, CustomStrin
 }
 
 /// Representation of a process termination exit status code.
-public struct ProcessExitCode: Sendable, Equatable, Hashable, Codable, CustomStringConvertible, ExpressibleByIntegerLiteral {
+public struct ProcessExitCode: Sendable, Equatable, Hashable, Codable, CustomStringConvertible {
     public let rawValue: Int32
     
     public init(_ rawValue: Int32) {
         self.rawValue = rawValue
-    }
-    
-    public init(integerLiteral value: Int32) {
-        self.rawValue = value
     }
     
     public var description: String { "\(rawValue)" }
@@ -56,24 +52,6 @@ public struct ProcessExitCode: Sendable, Equatable, Hashable, Codable, CustomStr
     public static let sigint = ProcessExitCode(130)  // 128 + SIGINT (2)
     public static let sigkill = ProcessExitCode(137) // 128 + SIGKILL (9)
     public static let sigterm = ProcessExitCode(143) // 128 + SIGTERM (15)
-    
-    // MARK: - Int32 Interoperability
-    
-    public static func == (lhs: ProcessExitCode, rhs: Int32) -> Bool {
-        lhs.rawValue == rhs
-    }
-    
-    public static func == (lhs: Int32, rhs: ProcessExitCode) -> Bool {
-        lhs == rhs.rawValue
-    }
-    
-    public static func != (lhs: ProcessExitCode, rhs: Int32) -> Bool {
-        lhs.rawValue != rhs
-    }
-    
-    public static func != (lhs: Int32, rhs: ProcessExitCode) -> Bool {
-        lhs != rhs.rawValue
-    }
 }
 
 /// Error thrown when an invalid lifecycle state transition is attempted.
